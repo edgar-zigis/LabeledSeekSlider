@@ -2,16 +2,24 @@ package com.zigis.labeledseekslider
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Typeface
+import android.graphics.*
+import android.os.Build
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
+import com.zigis.labeledseekslider.custom.BubblePointerAlignment
+import com.zigis.labeledseekslider.custom.BubblePointerAlignment.*
 import com.zigis.labeledseekslider.custom.UnitPosition
+import kotlin.math.max
 
+
+@Suppress("DEPRECATION")
+@SuppressLint("DrawAllocation")
 open class LabeledSeekSlider : View {
 
     //  Setting vars
@@ -59,25 +67,57 @@ open class LabeledSeekSlider : View {
         }
 
     var activeTrackColor = Color.parseColor("#FF2400")
+        set(value) {
+            field = value
+            activeTrackPaint.color = value
+        }
     var inactiveTrackColor = Color.parseColor("#E8E8E8")
-    var thumbSliderBackgroundColor = Color.parseColor("#E8E8E8")
+    var thumbSliderBackgroundColor = Color.parseColor("#FFFFFF")
     var bubbleValueTextColor = Color.parseColor("#1A1A1A")
     var bubbleOutlineColor = Color.parseColor("#E8E8E8")
-    var labelTextColor = Color.parseColor("#AFB6BB")
+        set(value) {
+            field = value
+            bubblePaint.color = value
+        }
+    var titleTextColor = Color.parseColor("#AFB6BB")
     var rangeValueTextColor = Color.parseColor("#AFB6BB")
 
-    var labelTextFont = Typeface.create("sans-serif-light", Typeface.NORMAL)
-    var rangeValueTextFont = Typeface.create("sans-serif-light", Typeface.NORMAL)
+    var titleTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
+    var rangeValueTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
     var bubbleValueTextFont = Typeface.create("sans-serif", Typeface.BOLD)
 
     var bubbleValueTextSize = dp(14f)
-    var labelTextSize = dp(12f)
+    var titleTextSize = dp(12f)
     var rangeValueTextSize = dp(12f)
 
     var slidingInterval: Int = 1
 
     private var trackHeight = dp(4f)
     private var thumbSliderSize = dp(24f)
+
+    //  Operational vars
+
+    private val topPadding = dp(2f)
+    private val sidePadding = dp(16f)
+    private val bubbleHeight = dp(34f)
+    private val minimumBubbleWidth = dp(84f)
+    private val bubbleTextPadding = dp(16f)
+
+    private val activeTrackPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        it.style = Paint.Style.FILL_AND_STROKE
+    }
+
+    private val bubblePaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.style = Paint.Style.STROKE
+        it.strokeWidth = dp(2f)
+        it.strokeCap = Paint.Cap.ROUND
+        it.pathEffect = CornerPathEffect(dp(4f))
+    }
+    private var bubblePath = Path()
+
+    private val labelRect = Rect()
+    private var labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
     //  Constructors
 
@@ -89,7 +129,11 @@ open class LabeledSeekSlider : View {
         init(context, attrs)
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         init(context, attrs)
     }
 
@@ -111,22 +155,44 @@ open class LabeledSeekSlider : View {
         limitValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, limitValue)
         title = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_title) ?: title
         unit = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_unit) ?: unit
-        unitPosition = UnitPosition.parse(
-            styledAttributes.getInt(R.styleable.LabeledSeekSlider_lss_unitPosition, UnitPosition.BACK.value)
-        )
+        unitPosition = UnitPosition.parse(styledAttributes.getInt(
+            R.styleable.LabeledSeekSlider_lss_unitPosition,
+            UnitPosition.BACK.value
+        ))
         isDisabled = styledAttributes.getBoolean(R.styleable.LabeledSeekSlider_lss_isDisabled, isDisabled)
 
-        activeTrackColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_activeTrackColor, activeTrackColor)
-        inactiveTrackColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_inactiveTrackColor, inactiveTrackColor)
-        thumbSliderBackgroundColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_thumbSliderBackgroundColor, thumbSliderBackgroundColor)
-        bubbleValueTextColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_bubbleValueTextColor, bubbleValueTextColor)
-        bubbleOutlineColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_bubbleOutlineColor, bubbleOutlineColor)
-        labelTextColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_labelTextColor, labelTextColor)
-        rangeValueTextColor = styledAttributes.getColor(R.styleable.LabeledSeekSlider_lss_rangeValueTextColor, rangeValueTextColor)
+        activeTrackColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_activeTrackColor,
+            activeTrackColor
+        )
+        inactiveTrackColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_inactiveTrackColor,
+            inactiveTrackColor
+        )
+        thumbSliderBackgroundColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_thumbSliderBackgroundColor,
+            thumbSliderBackgroundColor
+        )
+        bubbleValueTextColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_bubbleValueTextColor,
+            bubbleValueTextColor
+        )
+        bubbleOutlineColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_bubbleOutlineColor,
+            bubbleOutlineColor
+        )
+        titleTextColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_titleTextColor,
+            titleTextColor
+        )
+        rangeValueTextColor = styledAttributes.getColor(
+            R.styleable.LabeledSeekSlider_lss_rangeValueTextColor,
+            rangeValueTextColor
+        )
 
-        val labelTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_labelTextFont, 0)
-        if (labelTextFontRes > 0) {
-            labelTextFont = ResourcesCompat.getFont(context, labelTextFontRes) ?: labelTextFont
+        val titleTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_titleTextFont, 0)
+        if (titleTextFontRes > 0) {
+            titleTextFont = ResourcesCompat.getFont(context, titleTextFontRes) ?: titleTextFont
         }
         val rangeValueTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_rangeValueTextFont, 0)
         if (rangeValueTextFontRes > 0) {
@@ -137,18 +203,95 @@ open class LabeledSeekSlider : View {
             bubbleValueTextFont = ResourcesCompat.getFont(context, bubbleValueTextFontRes) ?: bubbleValueTextFont
         }
 
-        slidingInterval = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_slidingInterval, slidingInterval)
+        slidingInterval = styledAttributes.getInteger(
+            R.styleable.LabeledSeekSlider_lss_slidingInterval,
+            slidingInterval
+        )
 
-        bubbleValueTextSize = styledAttributes.getDimension(R.styleable.LabeledSeekSlider_lss_bubbleValueTextSize, bubbleValueTextSize)
-        labelTextSize = styledAttributes.getDimension(R.styleable.LabeledSeekSlider_lss_labelTextSize, labelTextSize)
-        rangeValueTextSize = styledAttributes.getDimension(R.styleable.LabeledSeekSlider_lss_rangeValueTextSize, rangeValueTextSize)
+        bubbleValueTextSize = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_bubbleValueTextSize,
+            bubbleValueTextSize
+        )
+        titleTextSize = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_titleTextSize,
+            titleTextSize
+        )
+        rangeValueTextSize = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_rangeValueTextSize,
+            rangeValueTextSize
+        )
 
-        trackHeight = styledAttributes.getDimension(R.styleable.LabeledSeekSlider_lss_trackHeight, trackHeight)
-        thumbSliderSize = styledAttributes.getDimension(R.styleable.LabeledSeekSlider_lss_thumbSliderSize, thumbSliderSize)
+        trackHeight = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_trackHeight,
+            trackHeight
+        )
+        thumbSliderSize = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_thumbSliderSize,
+            thumbSliderSize
+        )
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        val activeTrackRect = RectF(dp(16f), 0f, measuredWidth.toFloat() - dp(16f), trackHeight)
+        val cornerRadius = trackHeight / 2
+
+        canvas.drawRoundRect(activeTrackRect, cornerRadius, cornerRadius, activeTrackPaint)
+
+        drawTitle(canvas)
+
+        drawBubbleOutline(x = getActiveX(defaultValue), wrappedTextWidth = dp(40f), alignment = CENTER)
+        canvas.drawPath(bubblePath, bubblePaint)
+    }
+
+    private fun getActiveX(currentValue: Int): Float {
+        val slidingAreaWidth = measuredWidth - sidePadding
+        val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
+        return slidingAreaWidth * progress
+    }
+
+    private fun drawBubbleOutline(
+        x: Float,
+        wrappedTextWidth: Float,
+        alignment: BubblePointerAlignment
+    ) {
+        val bubbleWidth = max(minimumBubbleWidth, wrappedTextWidth + bubbleTextPadding * 2)
+
+        bubblePath = Path()
+        bubblePath.fillType = Path.FillType.EVEN_ODD
+
+        bubblePath.moveTo(x - (bubbleWidth / 2 - sidePadding / 2), topPadding)
+        bubblePath.rLineTo(bubbleWidth, 0f)
+        bubblePath.rLineTo(0f, bubbleHeight - dp(8f))
+        bubblePath.rLineTo(-(bubbleWidth / 2 - dp(4f)), 0f)
+        bubblePath.rLineTo(-dp(4f), dp(8f))
+        bubblePath.rLineTo(-dp(4f), -dp(8f))
+        bubblePath.rLineTo(-(bubbleWidth / 2 - dp(4f)), 0f)
+        bubblePath.rLineTo(0f, -(bubbleHeight - dp(8f)))
+
+        bubblePath.close()
+    }
+
+    private fun drawTitle(canvas: Canvas) {
+        labelPaint.color = titleTextColor
+        labelPaint.typeface = titleTextFont
+        labelPaint.textSize = titleTextSize
+        labelPaint.getTextBounds(title, 0, title.length, labelRect)
+
+        val textLayout = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
+            val builder = StaticLayout.Builder.obtain(title, 0, title.length, labelPaint, measuredWidth)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            builder.build()
+        } else {
+            StaticLayout(title, labelPaint, width, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        }
+
+        canvas.save()
+
+        canvas.translate(sidePadding, 0f)
+        textLayout.draw(canvas)
+
+        canvas.restore()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

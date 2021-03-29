@@ -20,12 +20,12 @@
         <attr name="lss_thumbSliderBackgroundColor" format="color" />
         <attr name="lss_bubbleValueTextColor" format="color" />
         <attr name="lss_bubbleOutlineColor" format="color" />
-        <attr name="lss_labelTextColor" format="color" />
+        <attr name="lss_titleTextColor" format="color" />
         <attr name="lss_rangeValueTextColor" format="color" />
         <attr name="lss_bubbleValueTextSize" format="dimension" />
         <attr name="lss_bubbleValueTextFont" format="reference" />
-        <attr name="lss_labelTextSize" format="dimension" />
-        <attr name="lss_labelTextFont" format="reference" />
+        <attr name="lss_titleTextSize" format="dimension" />
+        <attr name="lss_titleTextFont" format="reference" />
         <attr name="lss_rangeValueTextSize" format="dimension" />
         <attr name="lss_rangeValueTextFont" format="reference" />
     </declare-styleable>
