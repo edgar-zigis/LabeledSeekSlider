@@ -73,6 +73,10 @@ open class LabeledSeekSlider : View {
         }
     var inactiveTrackColor = Color.parseColor("#E8E8E8")
     var thumbSliderBackgroundColor = Color.parseColor("#FFFFFF")
+        set(value) {
+            field = value
+            thumbSliderPaint.color = value
+        }
     var bubbleValueTextColor = Color.parseColor("#1A1A1A")
     var bubbleOutlineColor = Color.parseColor("#E8E8E8")
         set(value) {
@@ -93,18 +97,28 @@ open class LabeledSeekSlider : View {
     var slidingInterval: Int = 1
 
     private var trackHeight = dp(4f)
-    private var thumbSliderSize = dp(24f)
+    private var thumbSliderRadius = dp(12f)
+
+    //  Read-only public vars
+
+    var currentValue: Int = 150
+        private set
 
     //  Operational vars
 
     private val topPadding = dp(2f)
     private val sidePadding = dp(16f)
-    private val bubbleHeight = dp(34f)
+    private val bubbleHeight = dp(26f)
     private val minimumBubbleWidth = dp(84f)
     private val bubbleTextPadding = dp(16f)
 
+    private val thumbSliderPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
+        it.style = Paint.Style.FILL
+        it.setShadowLayer(dp(4f), 0f, 1f, Color.LTGRAY)
+        setLayerType(LAYER_TYPE_SOFTWARE, it)
+    }
+
     private val activeTrackPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
-        it.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
         it.style = Paint.Style.FILL_AND_STROKE
     }
 
@@ -115,6 +129,10 @@ open class LabeledSeekSlider : View {
         it.pathEffect = CornerPathEffect(dp(4f))
     }
     private var bubblePath = Path()
+    private var bubblePathWidth = 0f
+
+    private val bubbleValueRect = Rect()
+    private var bubbleValuePaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
     private val labelRect = Rect()
     private var labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
@@ -225,23 +243,31 @@ open class LabeledSeekSlider : View {
             R.styleable.LabeledSeekSlider_lss_trackHeight,
             trackHeight
         )
-        thumbSliderSize = styledAttributes.getDimension(
-            R.styleable.LabeledSeekSlider_lss_thumbSliderSize,
-            thumbSliderSize
+        thumbSliderRadius = styledAttributes.getDimension(
+            R.styleable.LabeledSeekSlider_lss_thumbSliderRadius,
+            thumbSliderRadius
         )
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val activeTrackRect = RectF(dp(16f), 0f, measuredWidth.toFloat() - dp(16f), trackHeight)
-        val cornerRadius = trackHeight / 2
 
+        val activeTrackRect = RectF(
+            sidePadding,
+            bubbleHeight + dp(36f),
+            measuredWidth.toFloat() - sidePadding,
+            bubbleHeight + dp(36f) + trackHeight
+        )
+        val cornerRadius = trackHeight / 2
         canvas.drawRoundRect(activeTrackRect, cornerRadius, cornerRadius, activeTrackPaint)
 
-        drawTitle(canvas)
 
-        drawBubbleOutline(x = getActiveX(defaultValue), wrappedTextWidth = dp(40f), alignment = CENTER)
-        canvas.drawPath(bubblePath, bubblePaint)
+        getActiveX(currentValue).also { x ->
+            drawBubbleValue(canvas, x)
+            drawBubbleOutline(canvas, x, CENTER)
+            drawThumbSlider(canvas, x, activeTrackRect.centerY())
+        }
+        drawTitle(canvas)
     }
 
     private fun getActiveX(currentValue: Int): Float {
@@ -250,26 +276,93 @@ open class LabeledSeekSlider : View {
         return slidingAreaWidth * progress
     }
 
-    private fun drawBubbleOutline(
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return super.onTouchEvent(event)
+    }
+
+    private fun moveContent(x: Float, canvas: Canvas) {
+
+    }
+
+    private fun drawThumbSlider(
+        canvas: Canvas,
         x: Float,
-        wrappedTextWidth: Float,
+        y: Float
+    ) {
+        canvas.drawCircle(
+            max(sidePadding + thumbSliderRadius, x + sidePadding / 2),
+            y,
+            thumbSliderRadius,
+            thumbSliderPaint
+        )
+    }
+
+    //  Bubble drawing
+
+    private fun drawBubbleOutline(
+        canvas: Canvas,
+        x: Float,
         alignment: BubblePointerAlignment
     ) {
-        val bubbleWidth = max(minimumBubbleWidth, wrappedTextWidth + bubbleTextPadding * 2)
-
         bubblePath = Path()
         bubblePath.fillType = Path.FillType.EVEN_ODD
 
-        bubblePath.moveTo(x - (bubbleWidth / 2 - sidePadding / 2), topPadding)
-        bubblePath.rLineTo(bubbleWidth, 0f)
-        bubblePath.rLineTo(0f, bubbleHeight - dp(8f))
-        bubblePath.rLineTo(-(bubbleWidth / 2 - dp(4f)), 0f)
-        bubblePath.rLineTo(-dp(4f), dp(8f))
-        bubblePath.rLineTo(-dp(4f), -dp(8f))
-        bubblePath.rLineTo(-(bubbleWidth / 2 - dp(4f)), 0f)
-        bubblePath.rLineTo(0f, -(bubbleHeight - dp(8f)))
+        val bubbleStartX = max(sidePadding / 2, x - (bubblePathWidth / 2 - sidePadding / 2))
+
+        bubblePath.moveTo(bubbleStartX, topPadding)
+        bubblePath.rLineTo(bubblePathWidth, 0f)
+        bubblePath.rLineTo(0f, bubbleHeight)
+        bubblePath.rLineTo(-(bubblePathWidth / 2 - dp(3f)), 0f)
+        bubblePath.rLineTo(-dp(3f), dp(4f))
+        bubblePath.rLineTo(-dp(3f), -dp(4f))
+        bubblePath.rLineTo(-(bubblePathWidth / 2 - dp(3f)), 0f)
+        bubblePath.rLineTo(0f, -bubbleHeight)
 
         bubblePath.close()
+
+        canvas.drawPath(bubblePath, bubblePaint)
+    }
+
+    private fun drawBubbleValue(canvas: Canvas, x: Float) {
+        val bubbleValueText = if (unitPosition == UnitPosition.FRONT) {
+            currentValue.toString().plus(unit)
+        } else {
+            currentValue.toString().plus(" ").plus(unit)
+        }
+
+        bubbleValuePaint.color = bubbleValueTextColor
+        bubbleValuePaint.typeface = bubbleValueTextFont
+        bubbleValuePaint.textSize = bubbleValueTextSize
+        bubbleValuePaint.getTextBounds(bubbleValueText, 0, bubbleValueText.length, bubbleValueRect)
+
+        val textLayout = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
+            val builder = StaticLayout.Builder.obtain(bubbleValueText, 0, bubbleValueText.length, bubbleValuePaint, measuredWidth)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            builder.build()
+        } else {
+            StaticLayout(bubbleValueText, bubbleValuePaint, width, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        }
+
+        canvas.save()
+
+        bubblePathWidth = max(minimumBubbleWidth, bubbleValueRect.width() + bubbleTextPadding * 2)
+
+        val startX = max(
+            bubblePathWidth / 2 - bubbleValueRect.width() / 2 + sidePadding / 2,
+            x - bubbleValueRect.width() / 2 + sidePadding / 2
+        )
+        canvas.translate(
+            startX,
+            (bubbleHeight - bubbleValueRect.height()) / 2 - dp(1f)
+        )
+        textLayout.draw(canvas)
+
+        canvas.restore()
     }
 
     private fun drawTitle(canvas: Canvas) {
@@ -288,19 +381,10 @@ open class LabeledSeekSlider : View {
 
         canvas.save()
 
-        canvas.translate(sidePadding, 0f)
+        canvas.translate(sidePadding, bubbleHeight + dp(8f))
         textLayout.draw(canvas)
 
         canvas.restore()
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return super.onTouchEvent(event)
     }
 
     //  Helper methods

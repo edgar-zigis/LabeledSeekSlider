@@ -14,7 +14,7 @@
         <attr name="lss_slidingInterval" format="integer" />
         <attr name="lss_isDisabled" format="boolean" />
         <attr name="lss_trackHeight" format="dimension" />
-        <attr name="lss_thumbSliderSize" format="dimension" />
+        <attr name="lss_thumbSliderRadius" format="dimension" />
         <attr name="lss_activeTrackColor" format="color" />
         <attr name="lss_inactiveTrackColor" format="color" />
         <attr name="lss_thumbSliderBackgroundColor" format="color" />
