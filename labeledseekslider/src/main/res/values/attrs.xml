@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="LabeledSeekSlider">
+        <attr name="lss_minValue" format="integer" />
+        <attr name="lss_maxValue" format="integer" />
+        <attr name="lss_defaultValue" format="integer" />
+        <attr name="lss_limitValue" format="integer" />
+        <attr name="lss_title" format="string" />
+        <attr name="lss_unit" format="string" />
+        <attr name="lss_unitPosition">
+            <flag name="front" value="0" />
+            <flag name="back" value="1" />
+        </attr>
+        <attr name="lss_slidingInterval" format="integer" />
+        <attr name="lss_isDisabled" format="boolean" />
+        <attr name="lss_trackHeight" format="dimension" />
+        <attr name="lss_thumbSliderSize" format="dimension" />
+        <attr name="lss_activeTrackColor" format="color" />
+        <attr name="lss_inactiveTrackColor" format="color" />
+        <attr name="lss_thumbSliderBackgroundColor" format="color" />
+        <attr name="lss_bubbleValueTextColor" format="color" />
+        <attr name="lss_bubbleOutlineColor" format="color" />
+        <attr name="lss_labelTextColor" format="color" />
+        <attr name="lss_rangeValueTextColor" format="color" />
+        <attr name="lss_bubbleValueTextSize" format="dimension" />
+        <attr name="lss_bubbleValueTextFont" format="reference" />
+        <attr name="lss_labelTextSize" format="dimension" />
+        <attr name="lss_labelTextFont" format="reference" />
+        <attr name="lss_rangeValueTextSize" format="dimension" />
+        <attr name="lss_rangeValueTextFont" format="reference" />
+    </declare-styleable>
+</resources>

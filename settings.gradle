@@ -1,0 +1,3 @@
+include ':labeledseekslider'
+include ':app'
+rootProject.name = "LabeledSeekSlider"
