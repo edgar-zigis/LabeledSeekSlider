@@ -134,8 +134,8 @@ open class LabeledSeekSlider : View {
     private val bubbleValueRect = Rect()
     private var bubbleValuePaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
-    private val labelRect = Rect()
-    private var labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+    private val titleRect = Rect()
+    private var titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
     //  Constructors
 
@@ -252,22 +252,23 @@ open class LabeledSeekSlider : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        val activeTrackRect = RectF(
-            sidePadding,
-            bubbleHeight + dp(36f),
-            measuredWidth.toFloat() - sidePadding,
-            bubbleHeight + dp(36f) + trackHeight
-        )
-        val cornerRadius = trackHeight / 2
-        canvas.drawRoundRect(activeTrackRect, cornerRadius, cornerRadius, activeTrackPaint)
-
 
         getActiveX(currentValue).also { x ->
             drawBubbleValue(canvas, x)
             drawBubbleOutline(canvas, x, CENTER)
+            drawTitle(canvas)
+
+            val activeTrackRect = RectF(
+                sidePadding,
+                bubbleHeight + dp(8f) + titleRect.height() + dp(8f) + thumbSliderRadius,
+                measuredWidth.toFloat() - sidePadding,
+                bubbleHeight + dp(8f) + titleRect.height() + dp(8f) + thumbSliderRadius + trackHeight
+            )
+            val cornerRadius = trackHeight / 2
+            canvas.drawRoundRect(activeTrackRect, cornerRadius, cornerRadius, activeTrackPaint)
+
             drawThumbSlider(canvas, x, activeTrackRect.centerY())
         }
-        drawTitle(canvas)
     }
 
     private fun getActiveX(currentValue: Int): Float {
@@ -295,7 +296,7 @@ open class LabeledSeekSlider : View {
         y: Float
     ) {
         canvas.drawCircle(
-            max(sidePadding + thumbSliderRadius, x + sidePadding / 2),
+            max(sidePadding + thumbSliderRadius, x + sidePadding / 2 + thumbSliderRadius),
             y,
             thumbSliderRadius,
             thumbSliderPaint
@@ -366,28 +367,39 @@ open class LabeledSeekSlider : View {
     }
 
     private fun drawTitle(canvas: Canvas) {
-        labelPaint.color = titleTextColor
-        labelPaint.typeface = titleTextFont
-        labelPaint.textSize = titleTextSize
-        labelPaint.getTextBounds(title, 0, title.length, labelRect)
-
-        val textLayout = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
-            val builder = StaticLayout.Builder.obtain(title, 0, title.length, labelPaint, measuredWidth)
-                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-            builder.build()
-        } else {
-            StaticLayout(title, labelPaint, width, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        titlePaint.apply {
+            color = titleTextColor
+            typeface = titleTextFont
+            textSize = titleTextSize
+            getTextBounds(title, 0, title.length, titleRect)
         }
+        canvas.apply {
+            save()
+            translate(sidePadding, bubbleHeight + dp(7f))
+            formTextLayout(title, titlePaint).draw(this)
+            restore()
+        }
+    }
 
-        canvas.save()
+    private fun drawMinRangeValue(canvas: Canvas) {
 
-        canvas.translate(sidePadding, bubbleHeight + dp(8f))
-        textLayout.draw(canvas)
+    }
 
-        canvas.restore()
+    private fun drawMaxRangeValue(canvas: Canvas) {
+
     }
 
     //  Helper methods
+
+    private fun formTextLayout(text: String, paint: TextPaint): StaticLayout {
+        return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
+            val builder = StaticLayout.Builder.obtain(text, 0, text.length, paint, measuredWidth)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            builder.build()
+        } else {
+            StaticLayout(text, paint, width, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        }
+    }
 
     private fun dp(dp: Float): Float {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
