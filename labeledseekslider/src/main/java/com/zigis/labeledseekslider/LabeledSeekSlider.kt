@@ -10,13 +10,14 @@ import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
+import android.view.MotionEvent.*
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
 import com.zigis.labeledseekslider.custom.BubblePointerAlignment
-import com.zigis.labeledseekslider.custom.BubblePointerAlignment.*
+import com.zigis.labeledseekslider.custom.BubblePointerAlignment.CENTER
 import com.zigis.labeledseekslider.custom.UnitPosition
 import kotlin.math.max
-
+import kotlin.math.min
 
 @Suppress("DEPRECATION")
 @SuppressLint("DrawAllocation")
@@ -83,8 +84,8 @@ open class LabeledSeekSlider : View {
             field = value
             bubblePaint.color = value
         }
-    var titleTextColor = Color.parseColor("#AFB6BB")
-    var rangeValueTextColor = Color.parseColor("#AFB6BB")
+    var titleTextColor = Color.parseColor("#9FA7AD")
+    var rangeValueTextColor = Color.parseColor("#9FA7AD")
 
     var titleTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
     var rangeValueTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
@@ -121,6 +122,7 @@ open class LabeledSeekSlider : View {
     private val activeTrackPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
         it.style = Paint.Style.FILL_AND_STROKE
     }
+    private var activeTrackRect: RectF? = null
 
     private val bubblePaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
         it.style = Paint.Style.STROKE
@@ -136,6 +138,10 @@ open class LabeledSeekSlider : View {
 
     private val titleRect = Rect()
     private var titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+
+    private val minRangeTextRect = Rect()
+    private val maxRangeTextRect = Rect()
+    private var rangeTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
     //  Constructors
 
@@ -169,15 +175,26 @@ open class LabeledSeekSlider : View {
 
         minValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_minValue, minValue)
         maxValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_maxValue, maxValue)
-        defaultValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_defaultValue, defaultValue)
-        limitValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, limitValue)
+        defaultValue = styledAttributes.getInteger(
+            R.styleable.LabeledSeekSlider_lss_defaultValue,
+            defaultValue
+        )
+        limitValue = styledAttributes.getInteger(
+            R.styleable.LabeledSeekSlider_lss_limitValue,
+            limitValue
+        )
         title = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_title) ?: title
         unit = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_unit) ?: unit
-        unitPosition = UnitPosition.parse(styledAttributes.getInt(
-            R.styleable.LabeledSeekSlider_lss_unitPosition,
-            UnitPosition.BACK.value
-        ))
-        isDisabled = styledAttributes.getBoolean(R.styleable.LabeledSeekSlider_lss_isDisabled, isDisabled)
+        unitPosition = UnitPosition.parse(
+            styledAttributes.getInt(
+                R.styleable.LabeledSeekSlider_lss_unitPosition,
+                UnitPosition.BACK.value
+            )
+        )
+        isDisabled = styledAttributes.getBoolean(
+            R.styleable.LabeledSeekSlider_lss_isDisabled,
+            isDisabled
+        )
 
         activeTrackColor = styledAttributes.getColor(
             R.styleable.LabeledSeekSlider_lss_activeTrackColor,
@@ -208,15 +225,24 @@ open class LabeledSeekSlider : View {
             rangeValueTextColor
         )
 
-        val titleTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_titleTextFont, 0)
+        val titleTextFontRes = styledAttributes.getResourceId(
+            R.styleable.LabeledSeekSlider_lss_titleTextFont,
+            0
+        )
         if (titleTextFontRes > 0) {
             titleTextFont = ResourcesCompat.getFont(context, titleTextFontRes) ?: titleTextFont
         }
-        val rangeValueTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_rangeValueTextFont, 0)
+        val rangeValueTextFontRes = styledAttributes.getResourceId(
+            R.styleable.LabeledSeekSlider_lss_rangeValueTextFont,
+            0
+        )
         if (rangeValueTextFontRes > 0) {
             rangeValueTextFont = ResourcesCompat.getFont(context, rangeValueTextFontRes) ?: rangeValueTextFont
         }
-        val bubbleValueTextFontRes = styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_bubbleValueTextFont, 0)
+        val bubbleValueTextFontRes = styledAttributes.getResourceId(
+            R.styleable.LabeledSeekSlider_lss_bubbleValueTextFont,
+            0
+        )
         if (bubbleValueTextFontRes > 0) {
             bubbleValueTextFont = ResourcesCompat.getFont(context, bubbleValueTextFontRes) ?: bubbleValueTextFont
         }
@@ -249,6 +275,30 @@ open class LabeledSeekSlider : View {
         )
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val minimumDesiredWidth = suggestedMinimumWidth + paddingLeft + paddingRight
+        val minimumDesiredHeight = dp(98f).toInt()
+        setMeasuredDimension(
+            measureDimension(minimumDesiredWidth, widthMeasureSpec),
+            measureDimension(minimumDesiredHeight, heightMeasureSpec)
+        )
+    }
+
+    private fun measureDimension(desiredSize: Int, measureSpec: Int): Int {
+        var result: Int
+        val specMode = MeasureSpec.getMode(measureSpec)
+        val specSize = MeasureSpec.getSize(measureSpec)
+        if (specMode == MeasureSpec.EXACTLY) {
+            result = specSize
+        } else {
+            result = desiredSize
+            if (specMode == MeasureSpec.AT_MOST) {
+                result = min(result, specSize)
+            }
+        }
+        return result
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
@@ -256,45 +306,47 @@ open class LabeledSeekSlider : View {
         getActiveX(currentValue).also { x ->
             drawBubbleValue(canvas, x)
             drawBubbleOutline(canvas, x, CENTER)
-            drawTitle(canvas)
+            drawTitleLabelText(canvas)
 
-            val activeTrackRect = RectF(
+            activeTrackRect = RectF(
                 sidePadding,
                 bubbleHeight + dp(8f) + titleRect.height() + dp(8f) + thumbSliderRadius,
                 measuredWidth.toFloat() - sidePadding,
                 bubbleHeight + dp(8f) + titleRect.height() + dp(8f) + thumbSliderRadius + trackHeight
             )
             val cornerRadius = trackHeight / 2
-            canvas.drawRoundRect(activeTrackRect, cornerRadius, cornerRadius, activeTrackPaint)
+            canvas.drawRoundRect(activeTrackRect!!, cornerRadius, cornerRadius, activeTrackPaint)
 
-            drawThumbSlider(canvas, x, activeTrackRect.centerY())
+            drawThumbSlider(canvas, x, activeTrackRect!!.centerY())
+            drawMinRangeText(canvas)
+            drawMaxRangeText(canvas)
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return when (event.action) {
+            ACTION_DOWN, ACTION_MOVE, ACTION_UP -> setCurrentPosition(event.x)
+            else -> false
         }
     }
 
     private fun getActiveX(currentValue: Int): Float {
+        return activeX
         val slidingAreaWidth = measuredWidth - sidePadding
         val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
         return slidingAreaWidth * progress
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    private var activeX = 0f
+
+    private fun setCurrentPosition(x: Float): Boolean {
+        activeX = x
+        invalidate()
+        return true
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return super.onTouchEvent(event)
-    }
-
-    private fun moveContent(x: Float, canvas: Canvas) {
-
-    }
-
-    private fun drawThumbSlider(
-        canvas: Canvas,
-        x: Float,
-        y: Float
-    ) {
+    private fun drawThumbSlider(canvas: Canvas, x: Float, y: Float) {
         canvas.drawCircle(
             max(sidePadding + thumbSliderRadius, x + sidePadding / 2 + thumbSliderRadius),
             y,
@@ -329,44 +381,29 @@ open class LabeledSeekSlider : View {
         canvas.drawPath(bubblePath, bubblePaint)
     }
 
+    //  Text value drawing
+
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
         val bubbleValueText = if (unitPosition == UnitPosition.FRONT) {
             currentValue.toString().plus(unit)
         } else {
             currentValue.toString().plus(" ").plus(unit)
         }
-
-        bubbleValuePaint.color = bubbleValueTextColor
-        bubbleValuePaint.typeface = bubbleValueTextFont
-        bubbleValuePaint.textSize = bubbleValueTextSize
-        bubbleValuePaint.getTextBounds(bubbleValueText, 0, bubbleValueText.length, bubbleValueRect)
-
-        val textLayout = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
-            val builder = StaticLayout.Builder.obtain(bubbleValueText, 0, bubbleValueText.length, bubbleValuePaint, measuredWidth)
-                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
-            builder.build()
-        } else {
-            StaticLayout(bubbleValueText, bubbleValuePaint, width, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        bubbleValuePaint.apply {
+            color = bubbleValueTextColor
+            typeface = bubbleValueTextFont
+            textSize = bubbleValueTextSize
+            getTextBounds(bubbleValueText, 0, bubbleValueText.length, bubbleValueRect)
         }
-
-        canvas.save()
-
-        bubblePathWidth = max(minimumBubbleWidth, bubbleValueRect.width() + bubbleTextPadding * 2)
-
-        val startX = max(
-            bubblePathWidth / 2 - bubbleValueRect.width() / 2 + sidePadding / 2,
-            x - bubbleValueRect.width() / 2 + sidePadding / 2
-        )
-        canvas.translate(
-            startX,
-            (bubbleHeight - bubbleValueRect.height()) / 2 - dp(1f)
-        )
-        textLayout.draw(canvas)
-
-        canvas.restore()
+        canvas.apply {
+            save()
+            translate(getBubbleTextHorizontalOffset(x), getBubbleTextVerticalOffset())
+            formTextLayout(bubbleValueText, bubbleValuePaint).draw(this)
+            restore()
+        }
     }
 
-    private fun drawTitle(canvas: Canvas) {
+    private fun drawTitleLabelText(canvas: Canvas) {
         titlePaint.apply {
             color = titleTextColor
             typeface = titleTextFont
@@ -375,18 +412,76 @@ open class LabeledSeekSlider : View {
         }
         canvas.apply {
             save()
-            translate(sidePadding, bubbleHeight + dp(7f))
+            translate(sidePadding, getTitleLabelTextVerticalOffset())
             formTextLayout(title, titlePaint).draw(this)
             restore()
         }
     }
 
-    private fun drawMinRangeValue(canvas: Canvas) {
-
+    private fun drawMinRangeText(canvas: Canvas) {
+        val textString = if (unitPosition == UnitPosition.FRONT) {
+            minValue.toString().plus(unit)
+        } else {
+            minValue.toString().plus(" ").plus(unit)
+        }
+        rangeTextPaint.apply {
+            color = rangeValueTextColor
+            typeface = rangeValueTextFont
+            textSize = rangeValueTextSize
+            getTextBounds(textString, 0, textString.length, minRangeTextRect)
+        }
+        canvas.apply {
+            save()
+            translate(sidePadding, getRangeTextVerticalOffset())
+            formTextLayout(textString, rangeTextPaint).draw(this)
+            restore()
+        }
     }
 
-    private fun drawMaxRangeValue(canvas: Canvas) {
+    private fun drawMaxRangeText(canvas: Canvas) {
+        val textString = if (unitPosition == UnitPosition.FRONT) {
+            maxValue.toString().plus(unit)
+        } else {
+            maxValue.toString().plus(" ").plus(unit)
+        }
+        rangeTextPaint.apply {
+            color = rangeValueTextColor
+            typeface = rangeValueTextFont
+            textSize = rangeValueTextSize
+            getTextBounds(textString, 0, textString.length, maxRangeTextRect)
+        }
+        canvas.apply {
+            save()
+            translate(getMaxRangeTextHorizontalOffset(), getRangeTextVerticalOffset())
+            formTextLayout(textString, rangeTextPaint).draw(this)
+            restore()
+        }
+    }
 
+    //  Margin methods
+
+    private fun getBubbleTextVerticalOffset(): Float {
+        return (bubbleHeight - bubbleValueRect.height()) / 2 - dp(2f)
+    }
+
+    private fun getBubbleTextHorizontalOffset(x: Float): Float {
+        bubblePathWidth = max(minimumBubbleWidth, bubbleValueRect.width() + bubbleTextPadding * 2)
+        return max(
+            bubblePathWidth / 2 - bubbleValueRect.width() / 2 + sidePadding / 2,
+            x - bubbleValueRect.width() / 2 + sidePadding / 2
+        )
+    }
+
+    private fun getTitleLabelTextVerticalOffset(): Float {
+        return bubbleHeight + topPadding + dp(5f)
+    }
+
+    private fun getRangeTextVerticalOffset(): Float {
+        return activeTrackRect!!.bottom + thumbSliderRadius + dp(2f)
+    }
+
+    private fun getMaxRangeTextHorizontalOffset(): Float {
+        return measuredWidth - maxRangeTextRect.width() - sidePadding
     }
 
     //  Helper methods

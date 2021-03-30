@@ -9,7 +9,7 @@
     <com.zigis.labeledseekslider.LabeledSeekSlider
         android:id="@+id/seekSlider"
         android:layout_width="0dp"
-        android:layout_height="84dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -18,9 +18,11 @@
         app:lss_defaultValue="550"
         app:lss_maxValue="1000"
         app:lss_minValue="100"
+        app:lss_rangeValueTextColor="#9FA7AD"
         app:lss_rangeValueTextFont="@font/ttnorms_regular"
         app:lss_slidingInterval="50"
         app:lss_title="Amount"
+        app:lss_titleTextColor="#9FA7AD"
         app:lss_titleTextFont="@font/ttnorms_regular"
         app:lss_unit="€" />
 
