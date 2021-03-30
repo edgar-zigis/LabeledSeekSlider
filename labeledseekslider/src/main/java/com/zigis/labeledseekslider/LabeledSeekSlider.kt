@@ -16,6 +16,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.zigis.labeledseekslider.custom.BubblePointerAlignment
 import com.zigis.labeledseekslider.custom.BubblePointerAlignment.CENTER
 import com.zigis.labeledseekslider.custom.UnitPosition
+import com.zigis.labeledseekslider.custom.vibrate
 import kotlin.math.max
 import kotlin.math.min
 
@@ -41,6 +42,11 @@ open class LabeledSeekSlider : View {
             invalidate()
         }
     var limitValue: Int = -1
+        set(value) {
+            field = value
+            invalidate()
+        }
+    var limitValueIndicator: String = "Max"
         set(value) {
             field = value
             invalidate()
@@ -190,6 +196,7 @@ open class LabeledSeekSlider : View {
     private var bubblePath = Path()
     private var bubblePathWidth = 0f
 
+    private var bubbleText: String = ""
     private val bubbleTextRect = Rect()
     private var bubbleTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
@@ -240,6 +247,7 @@ open class LabeledSeekSlider : View {
         }
 
         limitValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, limitValue)
+        limitValueIndicator = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_limitValueIndicator) ?: limitValueIndicator
         title = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_title) ?: title
         unit = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_unit) ?: unit
         unitPosition = UnitPosition.parse(
@@ -379,17 +387,20 @@ open class LabeledSeekSlider : View {
     }
 
     private fun handleSlidingMovement(x: Float): Boolean {
-        val relativeX = min(measuredWidth - sidePadding / 2, max(sidePadding / 2, x)) - sidePadding / 2
-        val slidingAreaWidth = measuredWidth - sidePadding
+        val relativeX = min(measuredWidth - sidePadding - thumbSliderRadius, max(sidePadding / 2 - thumbSliderRadius, x))
+        val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
 
-        currentValue = minValue + ((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
+        val newValue = minValue + ((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
+        currentValue = if (limitValue == -1) {
+            newValue
+        } else min(newValue, limitValue)
 
         invalidate()
         return true
     }
 
     private fun getActiveX(currentValue: Int): Float {
-        val slidingAreaWidth = measuredWidth - sidePadding
+        val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
         val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
         return slidingAreaWidth * progress
     }
@@ -459,11 +470,18 @@ open class LabeledSeekSlider : View {
 
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
         val textString = getUnitValue(currentValue)
-        bubbleTextPaint.getTextBounds(textString, 0, textString.length, bubbleTextRect)
+        if (currentValue == limitValue) {
+            if (!bubbleText.contains(limitValue.toString())) {
+                context.vibrate(50)
+            }
+            bubbleText = "$limitValueIndicator $textString"
+        } else bubbleText = textString
+
+        bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
         canvas.apply {
             save()
             translate(getBubbleTextHorizontalOffset(x), getBubbleTextVerticalOffset())
-            formTextLayout(textString, bubbleTextPaint).draw(this)
+            formTextLayout(bubbleText, bubbleTextPaint).draw(this)
             restore()
         }
     }

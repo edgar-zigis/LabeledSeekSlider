@@ -5,6 +5,7 @@
         <attr name="lss_maxValue" format="integer" />
         <attr name="lss_defaultValue" format="integer" />
         <attr name="lss_limitValue" format="integer" />
+        <attr name="lss_limitValueIndicator" format="string" />
         <attr name="lss_title" format="string" />
         <attr name="lss_unit" format="string" />
         <attr name="lss_unitPosition">
