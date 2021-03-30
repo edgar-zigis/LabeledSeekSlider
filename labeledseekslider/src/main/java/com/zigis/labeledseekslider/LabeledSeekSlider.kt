@@ -159,12 +159,15 @@ open class LabeledSeekSlider : View {
     private var trackHeight = dp(4f)
     private var thumbSliderRadius = dp(12f)
 
-    //  Read-only public vars
+    //  Read-only and public vars
 
+    var onValueChanged: ((Int) -> Unit)? = null
     var currentValue: Int = 150
         private set
 
     //  Operational vars
+
+    private var actualFractionalValue: Int = 150
 
     private val topPadding = dp(2f)
     private val sidePadding = dp(16f)
@@ -246,7 +249,7 @@ open class LabeledSeekSlider : View {
             R.styleable.LabeledSeekSlider_lss_defaultValue,
             defaultValue
         ).also {
-            currentValue = min(maxValue, max(minValue, it))
+            actualFractionalValue = min(maxValue, max(minValue, it))
         }
 
         limitValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, limitValue)
@@ -369,7 +372,7 @@ open class LabeledSeekSlider : View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        getActiveX(currentValue).also { x ->
+        getActiveX(actualFractionalValue).also { x ->
             drawBubbleValue(canvas, x)
             drawBubbleOutline(canvas, x, CENTER)
             drawTitleLabelText(canvas)
@@ -415,7 +418,7 @@ open class LabeledSeekSlider : View {
         val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
 
         val newValue = minValue + ((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
-        currentValue = if (limitValue == -1) {
+        actualFractionalValue = if (limitValue == -1) {
             newValue
         } else min(newValue, limitValue)
 
@@ -493,13 +496,21 @@ open class LabeledSeekSlider : View {
     //  Text value drawing
 
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
-        val textString = getUnitValue(currentValue)
-        if (currentValue == limitValue) {
+        val displayValue = actualFractionalValue.div(slidingInterval) * slidingInterval
+        val textString = getUnitValue(displayValue)
+
+        val previousText = bubbleText
+        if (actualFractionalValue == limitValue) {
             if (!bubbleText.contains(limitValue.toString())) {
                 context.vibrate(50)
             }
             bubbleText = "$limitValueIndicator $textString"
         } else bubbleText = textString
+
+        if (previousText != bubbleText) {
+            currentValue = displayValue
+            onValueChanged?.invoke(displayValue)
+        }
 
         bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
         canvas.apply {
