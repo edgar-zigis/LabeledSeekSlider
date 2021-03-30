@@ -207,6 +207,8 @@ open class LabeledSeekSlider : View {
     private val maxRangeTextRect = Rect()
     private var rangeTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
 
+    private val disabledStatePaint = Paint()
+
     //  Constructors
 
     constructor(context: Context) : super(context) {
@@ -230,6 +232,7 @@ open class LabeledSeekSlider : View {
     private fun init(context: Context, attrs: AttributeSet?) {
         if (isInEditMode) return
 
+        initializeDisabledStatePaint()
         val styledAttributes = context.theme.obtainStyledAttributes(
             attrs,
             R.styleable.LabeledSeekSlider,
@@ -378,8 +381,29 @@ open class LabeledSeekSlider : View {
         }
     }
 
+    override fun draw(canvas: Canvas?) {
+        if (isDisabled) {
+            canvas?.saveLayer(null, disabledStatePaint)
+        }
+        super.draw(canvas)
+        if (isDisabled) {
+            canvas?.restore()
+        }
+    }
+
+    override fun dispatchDraw(canvas: Canvas?) {
+        if (isDisabled) {
+            canvas?.saveLayer(null, disabledStatePaint)
+        }
+        super.dispatchDraw(canvas)
+        if (isDisabled) {
+            canvas?.restore()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (isDisabled) return false
         return when (event.action) {
             ACTION_DOWN, ACTION_MOVE, ACTION_UP -> handleSlidingMovement(event.x)
             else -> false
@@ -556,6 +580,21 @@ open class LabeledSeekSlider : View {
 
     private fun getMaxRangeTextHorizontalOffset(): Float {
         return measuredWidth - maxRangeTextRect.width() - sidePadding
+    }
+
+    //  Disabled state
+
+    private fun initializeDisabledStatePaint() {
+        val colorMatrix = ColorMatrix()
+        colorMatrix.set(
+            floatArrayOf(
+                0.33f, 0.33f, 0.33f, 0f, 0f,
+                0.33f, 0.33f, 0.33f, 0f, 0f,
+                0.33f, 0.33f, 0.33f, 0f, 0f,
+                0f, 0f, 0f, 1f, 0f
+            )
+        )
+        disabledStatePaint.colorFilter = ColorMatrixColorFilter(colorMatrix)
     }
 
     //  Helper methods

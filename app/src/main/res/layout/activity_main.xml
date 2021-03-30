@@ -16,6 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:lss_bubbleValueTextFont="@font/ttnorms_bold"
         app:lss_defaultValue="550"
+        app:lss_isDisabled="false"
         app:lss_limitValue="850"
         app:lss_limitValueIndicator="Max"
         app:lss_maxValue="1000"
