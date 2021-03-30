@@ -13,8 +13,6 @@ import android.view.MotionEvent
 import android.view.MotionEvent.*
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
-import com.zigis.labeledseekslider.custom.BubblePointerAlignment
-import com.zigis.labeledseekslider.custom.BubblePointerAlignment.CENTER
 import com.zigis.labeledseekslider.custom.UnitPosition
 import com.zigis.labeledseekslider.custom.vibrate
 import kotlin.math.max
@@ -374,7 +372,7 @@ open class LabeledSeekSlider : View {
         super.onDraw(canvas)
         getActiveX(actualFractionalValue).also { x ->
             drawBubbleValue(canvas, x)
-            drawBubbleOutline(canvas, x, CENTER)
+            drawBubbleOutline(canvas, x)
             drawTitleLabelText(canvas)
             drawInactiveTrack(canvas)
             drawActiveTrack(canvas, x)
@@ -471,21 +469,38 @@ open class LabeledSeekSlider : View {
 
     //  Bubble drawing
 
-    private fun drawBubbleOutline(
-        canvas: Canvas,
-        x: Float,
-        alignment: BubblePointerAlignment
-    ) {
+    private fun drawBubbleOutline(canvas: Canvas, x: Float) {
         bubblePath = Path().apply {
             fillType = Path.FillType.EVEN_ODD
             moveTo(getBubbleHorizontalOffset(x), topPadding)
 
+            val comparatorVar1 = x - (bubblePathWidth / 2 - sidePadding / 2)
+            val comparatorVar2 = sidePadding / 2
+            val comparatorVar3 = measuredWidth - sidePadding / 2 - bubblePathWidth
+
+            val tailStart = when {
+                comparatorVar2 > comparatorVar1 -> {
+                    bubblePathWidth / 2 + min(
+                        sidePadding / 2 + thumbSliderRadius + dp(2f),
+                        comparatorVar2 - comparatorVar1
+                    )
+                }
+                comparatorVar1 > comparatorVar3 -> {
+                    bubblePathWidth / 2 - min(
+                        sidePadding / 2 + thumbSliderRadius + dp(2f),
+                        comparatorVar1 - comparatorVar3
+                    )
+                }
+                else -> bubblePathWidth / 2
+            }
+            val tailEnd = bubblePathWidth - tailStart
+
             rLineTo(bubblePathWidth, 0f)
             rLineTo(0f, bubbleHeight)
-            rLineTo(-(bubblePathWidth / 2 - dp(3f)), 0f)
+            rLineTo(-(tailStart - dp(3f)), 0f)
             rLineTo(-dp(3f), dp(4f))
             rLineTo(-dp(3f), -dp(4f))
-            rLineTo(-(bubblePathWidth / 2 - dp(3f)), 0f)
+            rLineTo(-(tailEnd - dp(3f)), 0f)
             rLineTo(0f, -bubbleHeight)
 
             close()
