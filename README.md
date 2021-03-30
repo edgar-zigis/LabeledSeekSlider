@@ -3,7 +3,7 @@
 Custom & highly configurable seek slider with sliding intervals, disabled state and every possible setting to tackle!
 ##### Minimum target SDK: 21.
 
-![alt text](https://github.com/edgar-zigis/LabeledSeekSlider/blob/main/slide-sample.gif?raw=true)
+![alt text](https://github.com/edgar-zigis/LabeledSeekSlider/blob/main/sample-slide.gif?raw=true)
 
 ### Gradle
 Make sure you have jitpack.io included in your gradle repositories.
@@ -12,7 +12,7 @@ Make sure you have jitpack.io included in your gradle repositories.
 maven { url "https://jitpack.io" }
 ```
 ```
-implementation 'com.github.edgar-zigis:labeledseekslider:1.0.0'
+implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.1'
 ```
 ### Usage
 ``` xml

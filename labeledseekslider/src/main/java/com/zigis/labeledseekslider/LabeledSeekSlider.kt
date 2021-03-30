@@ -39,7 +39,7 @@ open class LabeledSeekSlider : View {
             field = value
             invalidate()
         }
-    var limitValue: Int = -1
+    var limitValue: Int? = null
         set(value) {
             field = value
             invalidate()
@@ -175,7 +175,7 @@ open class LabeledSeekSlider : View {
 
     private val thumbSliderPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
         it.style = Paint.Style.FILL
-        it.setShadowLayer(dp(4f), 0f, 1f, Color.LTGRAY)
+        it.setShadowLayer(dp(2f), 0f, 1f, Color.parseColor("#44444444"))
         setLayerType(LAYER_TYPE_SOFTWARE, it)
     }
 
@@ -250,7 +250,12 @@ open class LabeledSeekSlider : View {
             actualFractionalValue = min(maxValue, max(minValue, it))
         }
 
-        limitValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, limitValue)
+        styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_limitValue, -1).also {
+            if (it != -1) {
+                limitValue = it
+            }
+        }
+
         limitValueIndicator = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_limitValueIndicator) ?: limitValueIndicator
         title = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_title) ?: title
         unit = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_unit) ?: unit
@@ -294,26 +299,14 @@ open class LabeledSeekSlider : View {
             rangeValueTextColor
         )
 
-        val titleTextFontRes = styledAttributes.getResourceId(
-            R.styleable.LabeledSeekSlider_lss_titleTextFont,
-            0
-        )
-        if (titleTextFontRes > 0) {
-            titleTextFont = ResourcesCompat.getFont(context, titleTextFontRes) ?: titleTextFont
+        styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_titleTextFont, 0).also {
+            if (it > 0) titleTextFont = ResourcesCompat.getFont(context, it)
         }
-        val rangeValueTextFontRes = styledAttributes.getResourceId(
-            R.styleable.LabeledSeekSlider_lss_rangeValueTextFont,
-            0
-        )
-        if (rangeValueTextFontRes > 0) {
-            rangeValueTextFont = ResourcesCompat.getFont(context, rangeValueTextFontRes) ?: rangeValueTextFont
+        styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_rangeValueTextFont, 0).also {
+            if (it > 0) rangeValueTextFont = ResourcesCompat.getFont(context, it)
         }
-        val bubbleValueTextFontRes = styledAttributes.getResourceId(
-            R.styleable.LabeledSeekSlider_lss_bubbleValueTextFont,
-            0
-        )
-        if (bubbleValueTextFontRes > 0) {
-            bubbleValueTextFont = ResourcesCompat.getFont(context, bubbleValueTextFontRes) ?: bubbleValueTextFont
+        styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_bubbleValueTextFont, 0).also {
+            if (it > 0) bubbleValueTextFont = ResourcesCompat.getFont(context, it)
         }
 
         slidingInterval = styledAttributes.getInteger(
@@ -416,9 +409,9 @@ open class LabeledSeekSlider : View {
         val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
 
         val newValue = minValue + ((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
-        actualFractionalValue = if (limitValue == -1) {
+        actualFractionalValue = if (limitValue == null) {
             newValue
-        } else min(newValue, limitValue)
+        } else min(newValue, limitValue!!)
 
         invalidate()
         return true
@@ -512,15 +505,14 @@ open class LabeledSeekSlider : View {
 
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
         val displayValue = actualFractionalValue.div(slidingInterval) * slidingInterval
-        val textString = getUnitValue(displayValue)
 
         val previousText = bubbleText
         if (actualFractionalValue == limitValue) {
             if (!bubbleText.contains(limitValue.toString())) {
                 context.vibrate(50)
             }
-            bubbleText = "$limitValueIndicator $textString"
-        } else bubbleText = textString
+            bubbleText = "$limitValueIndicator ${getUnitValue(limitValue!!)}"
+        } else bubbleText = getUnitValue(displayValue)
 
         if (previousText != bubbleText) {
             currentValue = displayValue
