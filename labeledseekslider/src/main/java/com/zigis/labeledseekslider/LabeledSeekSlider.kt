@@ -42,6 +42,9 @@ open class LabeledSeekSlider : View {
     var limitValue: Int? = null
         set(value) {
             field = value
+            if (value != null && actualFractionalValue > value) {
+                actualFractionalValue = value
+            }
             invalidate()
         }
     var limitValueIndicator: String = "Max"
