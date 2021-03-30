@@ -14,8 +14,13 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:lss_activeTrackColor="#FF2400"
+        app:lss_bubbleOutlineColor="#E8E8E8"
+        app:lss_bubbleValueTextColor="#1A1A1A"
         app:lss_bubbleValueTextFont="@font/ttnorms_bold"
+        app:lss_bubbleValueTextSize="14sp"
         app:lss_defaultValue="550"
+        app:lss_inactiveTrackColor="#E8E8E8"
         app:lss_isDisabled="false"
         app:lss_limitValue="850"
         app:lss_limitValueIndicator="Max"
@@ -23,10 +28,16 @@
         app:lss_minValue="100"
         app:lss_rangeValueTextColor="#9FA7AD"
         app:lss_rangeValueTextFont="@font/ttnorms_regular"
+        app:lss_rangeValueTextSize="12sp"
         app:lss_slidingInterval="50"
+        app:lss_thumbSliderBackgroundColor="#FFFFFF"
+        app:lss_thumbSliderRadius="12dp"
         app:lss_title="Amount"
         app:lss_titleTextColor="#9FA7AD"
         app:lss_titleTextFont="@font/ttnorms_regular"
-        app:lss_unit="€" />
+        app:lss_titleTextSize="12sp"
+        app:lss_trackHeight="4dp"
+        app:lss_unit="€"
+        app:lss_unitPosition="back" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
