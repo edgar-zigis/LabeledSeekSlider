@@ -27,16 +27,24 @@ open class LabeledSeekSlider : View {
     var minValue: Int = 0
         set(value) {
             field = value
+            if (actualFractionalValue < value) {
+                actualFractionalValue = value
+            }
             invalidate()
         }
     var maxValue: Int = 100
         set(value) {
             field = value
+            if (actualFractionalValue > value) {
+                actualFractionalValue = value
+            }
             invalidate()
         }
     var defaultValue: Int = 50
         set(value) {
-            field = value
+            val newValue = min(maxValue, max(minValue, value))
+            field = newValue
+            actualFractionalValue = newValue
             invalidate()
         }
     var limitValue: Int? = null
@@ -517,7 +525,7 @@ open class LabeledSeekSlider : View {
             bubbleText = "$limitValueIndicator ${getUnitValue(limitValue!!)}"
         } else bubbleText = getUnitValue(displayValue)
 
-        if (previousText != bubbleText) {
+        if (previousText != bubbleText && previousText.isNotEmpty()) {
             currentValue = displayValue
             onValueChanged?.invoke(displayValue)
         }
