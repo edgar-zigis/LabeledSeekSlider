@@ -572,12 +572,14 @@ open class LabeledSeekSlider : View {
                 }
             }
             bubbleText = "$limitValueIndicator ${getUnitValue(limitValue!!)}"
-        } else bubbleText = getUnitValue(displayValue)
-
-        currentValue = displayValue
+            currentValue = limitValue!!
+        } else {
+            bubbleText = getUnitValue(displayValue)
+            currentValue = displayValue
+        }
 
         if (previousText != bubbleText && previousText.isNotEmpty()) {
-            onValueChanged?.invoke(displayValue)
+            onValueChanged?.invoke(currentValue)
         }
 
         bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
