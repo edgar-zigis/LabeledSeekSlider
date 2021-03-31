@@ -17,6 +17,7 @@ import com.zigis.labeledseekslider.custom.UnitPosition
 import com.zigis.labeledseekslider.custom.vibrate
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 @Suppress("DEPRECATION")
 @SuppressLint("DrawAllocation")
@@ -177,6 +178,7 @@ open class LabeledSeekSlider : View {
     //  Operational vars
 
     private var actualFractionalValue: Int = 150
+    private var actualXPosition: Float? = null
 
     private val topPadding = dp(2f)
     private val sidePadding = dp(16f)
@@ -419,16 +421,30 @@ open class LabeledSeekSlider : View {
         val relativeX = min(measuredWidth - sidePadding - thumbSliderRadius, max(sidePadding / 2 - thumbSliderRadius, x))
         val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
 
-        val newValue = minValue + ((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
+        val newValue = min(maxValue, max(
+            minValue,
+            minValue + round((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
+        ))
         actualFractionalValue = if (limitValue == null) {
             newValue
         } else min(newValue, limitValue!!)
+
+        if (limitValue != null) {
+            if (newValue <= limitValue!!) {
+                actualXPosition = x
+            }
+        } else {
+            actualXPosition = x
+        }
 
         invalidate()
         return true
     }
 
     private fun getActiveX(currentValue: Int): Float {
+        actualXPosition?.let {
+            return it
+        }
         val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
         val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
         return slidingAreaWidth * progress
@@ -519,7 +535,7 @@ open class LabeledSeekSlider : View {
 
         val previousText = bubbleText
         if (actualFractionalValue == limitValue) {
-            if (!bubbleText.contains(limitValue.toString())) {
+            if (!bubbleText.contains(limitValue.toString()) && previousText.isNotEmpty()) {
                 context.vibrate(50)
             }
             bubbleText = "$limitValueIndicator ${getUnitValue(limitValue!!)}"
