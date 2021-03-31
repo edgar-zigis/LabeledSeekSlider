@@ -12,7 +12,7 @@ Make sure you have jitpack.io included in your gradle repositories.
 maven { url "https://jitpack.io" }
 ```
 ```
-implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.1'
+implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.3'
 ```
 ### Usage
 ``` xml
@@ -44,7 +44,8 @@ implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.1'
     app:lss_titleTextSize="12sp"
     app:lss_trackHeight="4dp"
     app:lss_unit="€"
-    app:lss_unitPosition="back" />
+    app:lss_unitPosition="back"
+    app:lss_vibrateOnLimitReached="true" />
 ```
 ### Remarks
 At the moment wrap_content height configuration falls back to 98dp, so if you have increased default dimensions, you will also need to increase height param.

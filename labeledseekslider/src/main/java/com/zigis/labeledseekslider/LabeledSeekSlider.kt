@@ -61,6 +61,7 @@ open class LabeledSeekSlider : View {
             field = value
             invalidate()
         }
+    var vibrateOnLimitReached: Boolean = true
     var title: String = ""
         set(value) {
             field = value
@@ -254,8 +255,14 @@ open class LabeledSeekSlider : View {
             0
         )
 
-        minValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_minValue, minValue)
-        maxValue = styledAttributes.getInteger(R.styleable.LabeledSeekSlider_lss_maxValue, maxValue)
+        minValue = styledAttributes.getInteger(
+            R.styleable.LabeledSeekSlider_lss_minValue,
+            minValue
+        )
+        maxValue = styledAttributes.getInteger(
+            R.styleable.LabeledSeekSlider_lss_maxValue,
+            maxValue
+        )
         defaultValue = styledAttributes.getInteger(
             R.styleable.LabeledSeekSlider_lss_defaultValue,
             defaultValue
@@ -269,9 +276,21 @@ open class LabeledSeekSlider : View {
             }
         }
 
-        limitValueIndicator = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_limitValueIndicator) ?: limitValueIndicator
-        title = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_title) ?: title
-        unit = styledAttributes.getString(R.styleable.LabeledSeekSlider_lss_unit) ?: unit
+        vibrateOnLimitReached = styledAttributes.getBoolean(
+            R.styleable.LabeledSeekSlider_lss_vibrateOnLimitReached,
+            true
+        )
+
+        limitValueIndicator = styledAttributes.getString(
+            R.styleable.LabeledSeekSlider_lss_limitValueIndicator
+        ) ?: limitValueIndicator
+        title = styledAttributes.getString(
+            R.styleable.LabeledSeekSlider_lss_title
+        ) ?: title
+        unit = styledAttributes.getString(
+            R.styleable.LabeledSeekSlider_lss_unit
+        ) ?: unit
+
         unitPosition = UnitPosition.parse(
             styledAttributes.getInt(
                 R.styleable.LabeledSeekSlider_lss_unitPosition,
@@ -535,8 +554,10 @@ open class LabeledSeekSlider : View {
 
         val previousText = bubbleText
         if (actualFractionalValue == limitValue) {
-            if (!bubbleText.contains(limitValue.toString()) && previousText.isNotEmpty()) {
-                context.vibrate(50)
+            if (vibrateOnLimitReached) {
+                if (!bubbleText.contains(limitValue.toString()) && previousText.isNotEmpty()) {
+                    context.vibrate(50)
+                }
             }
             bubbleText = "$limitValueIndicator ${getUnitValue(limitValue!!)}"
         } else bubbleText = getUnitValue(displayValue)

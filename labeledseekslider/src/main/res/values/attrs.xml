@@ -29,5 +29,6 @@
         <attr name="lss_titleTextFont" format="reference" />
         <attr name="lss_rangeValueTextSize" format="dimension" />
         <attr name="lss_rangeValueTextFont" format="reference" />
+        <attr name="lss_vibrateOnLimitReached" format="boolean" />
     </declare-styleable>
 </resources>

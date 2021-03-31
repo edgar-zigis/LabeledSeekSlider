@@ -38,6 +38,7 @@
         app:lss_titleTextSize="12sp"
         app:lss_trackHeight="4dp"
         app:lss_unit="€"
-        app:lss_unitPosition="back" />
+        app:lss_unitPosition="back"
+        app:lss_vibrateOnLimitReached="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
