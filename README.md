@@ -12,7 +12,7 @@ Make sure you have jitpack.io included in your gradle repositories.
 maven { url "https://jitpack.io" }
 ```
 ```
-implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.3'
+implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.4'
 ```
 ### Usage
 ``` xml
