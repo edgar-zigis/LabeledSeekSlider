@@ -27,6 +27,9 @@ open class LabeledSeekSlider : View {
 
     var minValue: Int = 0
         set(value) {
+            if (field != value) {
+                actualXPosition = null
+            }
             field = value
             if (actualFractionalValue < value) {
                 actualFractionalValue = value
@@ -35,6 +38,9 @@ open class LabeledSeekSlider : View {
         }
     var maxValue: Int = 100
         set(value) {
+            if (field != value) {
+                actualXPosition = null
+            }
             field = value
             if (actualFractionalValue > value) {
                 actualFractionalValue = value
@@ -43,6 +49,9 @@ open class LabeledSeekSlider : View {
         }
     var defaultValue: Int = 50
         set(value) {
+            if (field != value) {
+                actualXPosition = null
+            }
             val newValue = min(maxValue, max(minValue, value))
             field = newValue
             actualFractionalValue = newValue
@@ -50,6 +59,9 @@ open class LabeledSeekSlider : View {
         }
     var limitValue: Int? = null
         set(value) {
+            if (field != value) {
+                actualXPosition = null
+            }
             field = value
             if (value != null && actualFractionalValue > value) {
                 actualFractionalValue = value
