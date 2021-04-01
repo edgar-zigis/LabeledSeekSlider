@@ -407,7 +407,7 @@ open class LabeledSeekSlider : View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        getActiveX(actualFractionalValue).also { x ->
+        (actualXPosition ?: getActiveX(actualFractionalValue)).also { x ->
             drawBubbleValue(canvas, x)
             drawBubbleOutline(canvas, x)
             drawTitleLabelText(canvas)
@@ -463,6 +463,8 @@ open class LabeledSeekSlider : View {
         if (limitValue != null) {
             if (newValue <= limitValue!!) {
                 actualXPosition = x
+            } else {
+                actualXPosition = getActiveX(limitValue!!)
             }
         } else {
             actualXPosition = x
@@ -473,9 +475,6 @@ open class LabeledSeekSlider : View {
     }
 
     private fun getActiveX(currentValue: Int): Float {
-        actualXPosition?.let {
-            return it
-        }
         val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
         val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
         return slidingAreaWidth * progress
