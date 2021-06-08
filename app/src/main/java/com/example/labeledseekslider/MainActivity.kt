@@ -3,14 +3,17 @@ package com.example.labeledseekslider
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import kotlinx.android.synthetic.main.activity_main.*
+import android.view.LayoutInflater
+import com.example.labeledseekslider.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        seekSlider.onValueChanged = { value ->
-            Log.d("LabeledSeekSlider", "Current slider value: $value")
+        ActivityMainBinding.inflate(LayoutInflater.from(applicationContext)).apply {
+            setContentView(root)
+            seekSlider.onValueChanged = { value ->
+                Log.d("LabeledSeekSlider", "Current slider value: $value")
+            }
         }
     }
 }
