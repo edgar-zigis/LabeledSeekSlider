@@ -49,7 +49,7 @@ open class LabeledSeekSlider : View {
         }
     var defaultValue: Int = 50
         set(value) {
-            if (field != value) {
+            if (field != value || field != getDisplayValue()) {
                 actualXPosition = null
             }
             val newValue = min(maxValue, max(minValue, value))
@@ -561,7 +561,7 @@ open class LabeledSeekSlider : View {
     //  Text value drawing
 
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
-        val displayValue = actualFractionalValue.div(slidingInterval) * slidingInterval
+        val displayValue = getDisplayValue()
 
         val previousText = bubbleText
         if (actualFractionalValue == limitValue) {
@@ -620,6 +620,10 @@ open class LabeledSeekSlider : View {
             formTextLayout(textString, rangeTextPaint).draw(this)
             restore()
         }
+    }
+
+    private fun getDisplayValue(): Int {
+        return actualFractionalValue.div(slidingInterval) * slidingInterval
     }
 
     //  Margin methods
