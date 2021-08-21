@@ -19,12 +19,18 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
 
+/**
+ * Highly customizable seek slider primarily designed for fintech apps.
+ *
+ * @author Edgar Žigis.
+ */
 @Suppress("DEPRECATION")
 @SuppressLint("DrawAllocation")
 open class LabeledSeekSlider : View {
 
-    //  Setting vars
-
+    /**
+     *  Lower range value also displayed in the left corner
+     */
     var minValue: Int = 0
         set(value) {
             if (field != value) {
@@ -36,6 +42,9 @@ open class LabeledSeekSlider : View {
             }
             invalidate()
         }
+    /**
+     *  Upper range value also displayed in the right corner
+     */
     var maxValue: Int = 100
         set(value) {
             if (field != value) {
@@ -47,6 +56,9 @@ open class LabeledSeekSlider : View {
             }
             invalidate()
         }
+    /**
+     *  Default value which will be displayed during the initial draw
+     */
     var defaultValue: Int = 50
         set(value) {
             if (field != value || field != getDisplayValue()) {
@@ -57,6 +69,10 @@ open class LabeledSeekSlider : View {
             actualFractionalValue = newValue
             invalidate()
         }
+    /**
+     *  Max sliding value, must be > min && < max
+     *  Won't be applicable if null
+     */
     var limitValue: Int? = null
         set(value) {
             if (field != value) {
@@ -68,124 +84,185 @@ open class LabeledSeekSlider : View {
             }
             invalidate()
         }
+    /**
+     *  Text label which indicates that the @param limitValue is reached
+     */
     var limitValueIndicator: String = "Max"
         set(value) {
             field = value
             invalidate()
         }
+    /**
+     *  Allows sliding past @param limitValue if needed
+     */
     var allowLimitValueBypass: Boolean = false
+    /**
+     *  Toggles vibration after @param limitValue is reached
+     */
     var vibrateOnLimitReached: Boolean = true
+    /**
+     *  Slider title label value
+     */
     var title: String = ""
         set(value) {
             field = value
             invalidate()
         }
+    /**
+     *  Slider unit label value
+     *  Will be set near the @param minValue and @param maxValue
+     */
     var unit: String = ""
         set(value) {
             field = value
             invalidate()
         }
+    /**
+     *  Slider unit label position
+     *  Can be placed in front or back
+     */
     var unitPosition = UnitPosition.BACK
         set(value) {
             field = value
             invalidate()
         }
+    /**
+     *  Will disable user interaction and grayscale whole view
+     */
     var isDisabled: Boolean = false
         set(value) {
             field = value
             invalidate()
         }
-
+    /**
+     *  Already filled track color
+     */
     var activeTrackColor = Color.parseColor("#FF2400")
         set(value) {
             field = value
             activeTrackPaint.color = value
             invalidate()
         }
+    /**
+     *  Yet not filled track color
+     */
     var inactiveTrackColor = Color.parseColor("#E8E8E8")
         set(value) {
             field = value
             inactiveTrackPaint.color = value
             invalidate()
         }
+    /**
+     *  Thumb slider background color
+     */
     var thumbSliderBackgroundColor = Color.parseColor("#FFFFFF")
         set(value) {
             field = value
             thumbSliderPaint.color = value
             invalidate()
         }
-
+    /**
+     *  Font for TextViews containing @param minValue and @param maValue
+     */
     var rangeValueTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
         set(value) {
             field = value
             rangeTextPaint.typeface = value
             invalidate()
         }
+    /**
+     *  Text color for TextViews containing @param minValue and @param maValue
+     */
     var rangeValueTextColor = Color.parseColor("#9FA7AD")
         set(value) {
             field = value
             rangeTextPaint.color = value
             invalidate()
         }
+    /**
+     *  Text size for TextViews containing @param minValue and @param maValue
+     */
     var rangeValueTextSize = dp(12f)
         set(value) {
             field = value
             rangeTextPaint.textSize = value
             invalidate()
         }
-
+    /**
+     *  Font for TextView containing @param title
+     */
     var titleTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
         set(value) {
             field = value
             titleTextPaint.typeface = value
             invalidate()
         }
+    /**
+     *  Text color for TextView containing @param title
+     */
     var titleTextColor = Color.parseColor("#9FA7AD")
         set(value) {
             field = value
             titleTextPaint.color = value
             invalidate()
         }
+    /**
+     *  Text size for TextView containing @param title
+     */
     var titleTextSize = dp(12f)
         set(value) {
             field = value
             titleTextPaint.textSize = value
             invalidate()
         }
-
+    /**
+     *  Current value bubble outline color
+     */
     var bubbleOutlineColor = Color.parseColor("#E8E8E8")
         set(value) {
             field = value
             bubblePaint.color = value
             invalidate()
         }
+    /**
+     *  Current value bubble text font
+     */
     var bubbleValueTextFont = Typeface.create("sans-serif", Typeface.BOLD)
         set(value) {
             field = value
             bubbleTextPaint.typeface = value
             invalidate()
         }
+    /**
+     *  Current value bubble text color
+     */
     var bubbleValueTextColor = Color.parseColor("#1A1A1A")
         set(value) {
             field = value
             bubbleTextPaint.color = value
             invalidate()
         }
+    /**
+     *  Current value bubble text size
+     */
     var bubbleValueTextSize = dp(14f)
         set(value) {
             field = value
             bubbleTextPaint.textSize = value
             invalidate()
         }
-
+    /**
+     *  Sliding interval value.
+     *  For example if set to 50, sliding values will be 0, 50, 100 etc.
+     */
     var slidingInterval: Int = 1
-
-    private var trackHeight = dp(4f)
-    private var thumbSliderRadius = dp(12f)
-
-    //  Read-only and public vars
-
+    /**
+     *  Callback reporting changed values upstream
+     */
     var onValueChanged: ((Int) -> Unit)? = null
+    /**
+     *  Read-only parameter for fetching current slider value
+     */
     var currentValue: Int = 150
         private set
 
@@ -199,6 +276,9 @@ open class LabeledSeekSlider : View {
     private val bubbleHeight = dp(26f)
     private val minimumBubbleWidth = dp(84f)
     private val bubbleTextPadding = dp(16f)
+
+    private var trackHeight = dp(4f)
+    private var thumbSliderRadius = dp(12f)
 
     private val thumbSliderPaint = Paint(Paint.ANTI_ALIAS_FLAG).also {
         it.style = Paint.Style.FILL
