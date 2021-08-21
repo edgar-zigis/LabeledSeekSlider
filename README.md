@@ -1,18 +1,18 @@
 # LabeledSeekSlider
 
 Custom & highly configurable seek slider with sliding intervals, disabled state and every possible setting to tackle!
-##### Minimum target SDK: 21.
+##### Minimum target SDK: 21
 
 ![alt text](https://github.com/edgar-zigis/LabeledSeekSlider/blob/master/sample-slide.gif?raw=true)
 
 ### Gradle
 Make sure you have jitpack.io included in your gradle repositories.
 
-```
+```gradle
 maven { url "https://jitpack.io" }
 ```
-```
-implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.7'
+```gradle
+implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.1.0'
 ```
 ### Usage
 ``` xml
@@ -48,4 +48,4 @@ implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.0.7'
     app:lss_vibrateOnLimitReached="true" />
 ```
 ### Remarks
-At the moment wrap_content height configuration falls back to 98dp, so if you have increased default dimensions, you will also need to increase height param.
+At the moment wrap_content height configuration falls back to **98dp**, so if you have increased default dimensions, you will also need to increase height param.
