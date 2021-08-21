@@ -73,6 +73,7 @@ open class LabeledSeekSlider : View {
             field = value
             invalidate()
         }
+    var allowLimitValueBypass: Boolean = false
     var vibrateOnLimitReached: Boolean = true
     var title: String = ""
         set(value) {
@@ -456,11 +457,11 @@ open class LabeledSeekSlider : View {
             minValue,
             minValue + round((maxValue - minValue) * (relativeX / slidingAreaWidth)).toInt()
         ))
-        actualFractionalValue = if (limitValue == null) {
+        actualFractionalValue = if (limitValue == null || allowLimitValueBypass) {
             newValue
         } else min(newValue, limitValue!!)
 
-        if (limitValue != null) {
+        if (limitValue != null && !allowLimitValueBypass) {
             if (newValue <= limitValue!!) {
                 actualXPosition = x
             } else {
@@ -564,7 +565,7 @@ open class LabeledSeekSlider : View {
         val displayValue = getDisplayValue()
 
         val previousText = bubbleText
-        if (actualFractionalValue == limitValue) {
+        if (actualFractionalValue == limitValue && !allowLimitValueBypass) {
             if (vibrateOnLimitReached) {
                 if (!bubbleText.contains(limitValue.toString()) && previousText.isNotEmpty()) {
                     context.vibrate(50)
