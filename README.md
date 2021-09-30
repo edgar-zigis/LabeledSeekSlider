@@ -6,7 +6,7 @@ Custom & highly configurable seek slider with sliding intervals, disabled state 
 ![alt text](https://github.com/edgar-zigis/LabeledSeekSlider/blob/master/sample-slide.gif?raw=true)
 
 ### Gradle
-Make sure you have **mavenCentral** included in your gradle repositories.
+Make sure you have **Maven Central** included in your gradle repositories.
 
 ```gradle
 allprojects {
