@@ -33,7 +33,7 @@ afterEvaluate {
 
                 pom {
                     name = PUBLISH_ARTIFACT_ID
-                    description = "Official Kevin. Android SDK"
+                    description = "LabeledSeekSlider"
                     url = "https://github.com/edgar-zigis/LabeledSeekSlider"
                     licenses {
                         license {
