@@ -20,7 +20,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                groupId "com.bio-matic.labeledseekslider"
+                groupId "com.bio-matic"
                 artifactId PUBLISH_ARTIFACT_ID
                 version sdkVersion
                 if (project.plugins.findPlugin("com.android.library")) {
