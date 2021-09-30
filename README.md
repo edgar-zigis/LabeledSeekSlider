@@ -6,13 +6,17 @@ Custom & highly configurable seek slider with sliding intervals, disabled state 
 ![alt text](https://github.com/edgar-zigis/LabeledSeekSlider/blob/master/sample-slide.gif?raw=true)
 
 ### Gradle
-Make sure you have jitpack.io included in your gradle repositories.
+Make sure you have **mavenCentral** included in your gradle repositories.
 
 ```gradle
-maven { url "https://jitpack.io" }
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
 ```
 ```gradle
-implementation 'com.github.edgar-zigis:LabeledSeekSlider:1.1.0'
+implementation 'com.bio-matic:labeledseekslider:1.1.2'
 ```
 ### Usage
 ``` xml
