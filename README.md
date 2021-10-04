@@ -16,7 +16,7 @@ allprojects {
 }
 ```
 ```gradle
-implementation 'com.bio-matic:labeledseekslider:1.1.2'
+implementation 'com.bio-matic:labeledseekslider:1.2.0'
 ```
 ### Usage
 ``` xml
@@ -50,6 +50,10 @@ implementation 'com.bio-matic:labeledseekslider:1.1.2'
     app:lss_unit="€"
     app:lss_unitPosition="back"
     app:lss_vibrateOnLimitReached="true" />
+```
+if you wish to skip certain values, you can set them programatically
+```kotlin
+seekSlider.valuesToSkip = listOf(4, 6, 10)
 ```
 ### Remarks
 At the moment wrap_content height configuration falls back to **98dp**, so if you have increased default dimensions, you will also need to increase height param.
