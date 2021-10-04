@@ -252,6 +252,13 @@ open class LabeledSeekSlider : View {
             invalidate()
         }
     /**
+     *  Values which will be "jumped" through and not emitted
+     *  As well as not displayed in the UI.
+     *  For example if min is 1, max is 5 and valuesToSkip has 3 and 4
+     *  Only 1, 2 and 5 will be displayed and emitted to the user.
+     */
+    var valuesToSkip: List<Int> = emptyList()
+    /**
      *  Sliding interval value.
      *  For example if set to 50, sliding values will be 0, 50, 100 etc.
      */
@@ -642,7 +649,22 @@ open class LabeledSeekSlider : View {
     //  Text value drawing
 
     private fun drawBubbleValue(canvas: Canvas, x: Float) {
+
+        fun drawBubbleValueOnCanvas() {
+            canvas.apply {
+                save()
+                translate(getBubbleTextHorizontalOffset(x), getBubbleTextVerticalOffset())
+                formTextLayout(bubbleText, bubbleTextPaint).draw(this)
+                restore()
+            }
+        }
+
         val displayValue = getDisplayValue()
+
+        if (displayValue in valuesToSkip) {
+            drawBubbleValueOnCanvas()
+            return
+        }
 
         val previousText = bubbleText
         if (actualFractionalValue == limitValue && !allowLimitValueBypass) {
@@ -663,12 +685,7 @@ open class LabeledSeekSlider : View {
         }
 
         bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
-        canvas.apply {
-            save()
-            translate(getBubbleTextHorizontalOffset(x), getBubbleTextVerticalOffset())
-            formTextLayout(bubbleText, bubbleTextPaint).draw(this)
-            restore()
-        }
+        drawBubbleValueOnCanvas()
     }
 
     private fun drawTitleLabelText(canvas: Canvas) {
