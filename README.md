@@ -1,4 +1,4 @@
-# LabeledSeekSlider
+# LabeledSeekSlider [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.bio-matic/labeledseekslider/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.bio-matic/labeledseekslider)
 
 Custom & highly configurable seek slider with sliding intervals, disabled state and every possible setting to tackle!
 ##### Minimum target SDK: 21
