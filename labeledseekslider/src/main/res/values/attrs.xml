@@ -31,5 +31,6 @@
         <attr name="lss_rangeValueTextFont" format="reference" />
         <attr name="lss_vibrateOnLimitReached" format="boolean" />
         <attr name="lss_hideBubble" format="boolean" />
+        <attr name="lss_thumbSliderDrawable" format="reference" />
     </declare-styleable>
 </resources>
