@@ -507,23 +507,23 @@ open class LabeledSeekSlider : View {
         }
     }
 
-    override fun draw(canvas: Canvas?) {
+    override fun draw(canvas: Canvas) {
         if (isDisabled) {
-            canvas?.saveLayer(null, disabledStatePaint)
+            canvas.saveLayer(null, disabledStatePaint)
         }
         super.draw(canvas)
         if (isDisabled) {
-            canvas?.restore()
+            canvas.restore()
         }
     }
 
-    override fun dispatchDraw(canvas: Canvas?) {
+    override fun dispatchDraw(canvas: Canvas) {
         if (isDisabled) {
-            canvas?.saveLayer(null, disabledStatePaint)
+            canvas.saveLayer(null, disabledStatePaint)
         }
         super.dispatchDraw(canvas)
         if (isDisabled) {
-            canvas?.restore()
+            canvas.restore()
         }
     }
 
