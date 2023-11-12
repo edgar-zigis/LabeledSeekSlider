@@ -252,6 +252,14 @@ open class LabeledSeekSlider : View {
             invalidate()
         }
     /**
+     *  Option to show/hide slider bubble
+     */
+    var isBubbleHidden = false
+        set(value) {
+            field = value
+            invalidate()
+        }
+    /**
      *  Values which will be "jumped" through and not emitted
      *  As well as not displayed in the UI.
      *  For example if min is 1, max is 5 and valuesToSkip has 3 and 4
@@ -422,6 +430,10 @@ open class LabeledSeekSlider : View {
             R.styleable.LabeledSeekSlider_lss_bubbleOutlineColor,
             bubbleOutlineColor
         )
+        isBubbleHidden = styledAttributes.getBoolean(
+            R.styleable.LabeledSeekSlider_lss_hideBubble,
+            false
+        )
         titleTextColor = styledAttributes.getColor(
             R.styleable.LabeledSeekSlider_lss_titleTextColor,
             titleTextColor
@@ -496,8 +508,10 @@ open class LabeledSeekSlider : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         (actualXPosition ?: getActiveX(actualFractionalValue)).also { x ->
-            drawBubbleValue(canvas, x)
-            drawBubbleOutline(canvas, x)
+            if (!isBubbleHidden) {
+                drawBubbleValue(canvas, x)
+                drawBubbleOutline(canvas, x)
+            }
             drawTitleLabelText(canvas)
             drawInactiveTrack(canvas)
             drawActiveTrack(canvas, x)
