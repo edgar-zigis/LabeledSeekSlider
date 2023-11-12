@@ -39,6 +39,7 @@
         app:lss_trackHeight="4dp"
         app:lss_unit="€"
         app:lss_unitPosition="back"
-        app:lss_vibrateOnLimitReached="true" />
+        app:lss_vibrateOnLimitReached="true"
+        app:lss_hideBubble="false" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

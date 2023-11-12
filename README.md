@@ -49,7 +49,8 @@ implementation 'com.bio-matic:labeledseekslider:1.2.0'
     app:lss_trackHeight="4dp"
     app:lss_unit="€"
     app:lss_unitPosition="back"
-    app:lss_vibrateOnLimitReached="true" />
+    app:lss_vibrateOnLimitReached="true"
+    app:lss_hideBubble="false" />
 ```
 if you wish to skip certain values, you can set them programatically
 ```kotlin
