@@ -41,6 +41,7 @@ implementation 'com.bio-matic:labeledseekslider:1.2.0'
     app:lss_rangeValueTextSize="12sp"
     app:lss_slidingInterval="50"
     app:lss_thumbSliderBackgroundColor="#FFFFFF"
+    app:lss_thumbSliderDrawable="@drawable/ic_thumb_slider"
     app:lss_thumbSliderRadius="12dp"
     app:lss_title="Amount"
     app:lss_titleTextColor="#9FA7AD"

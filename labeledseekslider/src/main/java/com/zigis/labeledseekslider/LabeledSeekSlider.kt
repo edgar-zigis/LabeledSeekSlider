@@ -3,6 +3,7 @@ package com.zigis.labeledseekslider
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
@@ -159,6 +160,14 @@ open class LabeledSeekSlider : View {
         set(value) {
             field = value
             thumbSliderPaint.color = value
+            invalidate()
+        }
+    /**
+     *  Replaces default thumb slider if set
+     */
+    var thumbSliderDrawable: Drawable? = null
+        set(value) {
+            field = value
             invalidate()
         }
     /**
@@ -422,6 +431,9 @@ open class LabeledSeekSlider : View {
             R.styleable.LabeledSeekSlider_lss_thumbSliderBackgroundColor,
             thumbSliderBackgroundColor
         )
+        thumbSliderDrawable = styledAttributes.getDrawable(
+            R.styleable.LabeledSeekSlider_lss_thumbSliderDrawable
+        )
         bubbleValueTextColor = styledAttributes.getColor(
             R.styleable.LabeledSeekSlider_lss_bubbleValueTextColor,
             bubbleValueTextColor
@@ -483,7 +495,7 @@ open class LabeledSeekSlider : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val minimumDesiredWidth = suggestedMinimumWidth + paddingLeft + paddingRight
-        val minimumDesiredHeight = dp(98f).toInt()
+        val minimumDesiredHeight = dp(120f).toInt()
         setMeasuredDimension(
             measureDimension(minimumDesiredWidth, widthMeasureSpec),
             measureDimension(minimumDesiredHeight, heightMeasureSpec)
@@ -584,15 +596,25 @@ open class LabeledSeekSlider : View {
 
     private fun drawThumbSlider(canvas: Canvas, x: Float) {
         val centerX = min(
-            measuredWidth - thumbSliderRadius - sidePadding,
-            max(sidePadding + thumbSliderRadius, x + sidePadding / 2)
+            measuredWidth - thumbSliderRadius / 2 - sidePadding,
+            max(sidePadding + thumbSliderRadius / 2, x + sidePadding / 2)
         )
-        canvas.drawCircle(
-            centerX,
-            inactiveTrackRect!!.centerY(),
-            thumbSliderRadius,
-            thumbSliderPaint
-        )
+        if (thumbSliderDrawable != null) {
+            thumbSliderDrawable?.setBounds(
+                centerX.toInt() - thumbSliderRadius.toInt() / 2,
+                inactiveTrackRect!!.centerY().toInt() - thumbSliderRadius.toInt() / 2,
+                centerX.toInt() + thumbSliderRadius.toInt() / 2,
+                inactiveTrackRect!!.centerY().toInt() + thumbSliderRadius.toInt() / 2
+            )
+            thumbSliderDrawable?.draw(canvas)
+        } else {
+            canvas.drawCircle(
+                centerX,
+                inactiveTrackRect!!.centerY(),
+                thumbSliderRadius,
+                thumbSliderPaint
+            )
+        }
     }
 
     //  Track drawing
@@ -601,7 +623,7 @@ open class LabeledSeekSlider : View {
         val activeTrackRect = RectF(
             sidePadding,
             getSlidingTrackVerticalOffset(),
-            min(measuredWidth.toFloat() - sidePadding, max(sidePadding, x + sidePadding)),
+            min(measuredWidth.toFloat() - sidePadding, max(sidePadding + thumbSliderRadius / 2, x + sidePadding / 2)),
             getSlidingTrackVerticalOffset() + trackHeight
         )
         val cornerRadius = trackHeight / 2
@@ -633,13 +655,13 @@ open class LabeledSeekSlider : View {
             val tailStart = when {
                 comparatorVar2 > comparatorVar1 -> {
                     bubblePathWidth / 2 + min(
-                        sidePadding / 2 + thumbSliderRadius + dp(2f),
+                        sidePadding / 2 + thumbSliderRadius / 2 + dp(2f),
                         comparatorVar2 - comparatorVar1
                     )
                 }
                 comparatorVar1 > comparatorVar3 -> {
                     bubblePathWidth / 2 - min(
-                        sidePadding / 2 + thumbSliderRadius + dp(2f),
+                        sidePadding / 2 + thumbSliderRadius / 2 + dp(2f),
                         comparatorVar1 - comparatorVar3
                     )
                 }

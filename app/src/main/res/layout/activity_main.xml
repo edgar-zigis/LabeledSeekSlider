@@ -20,6 +20,7 @@
         app:lss_bubbleValueTextFont="@font/ttnorms_bold"
         app:lss_bubbleValueTextSize="14sp"
         app:lss_defaultValue="550"
+        app:lss_hideBubble="false"
         app:lss_inactiveTrackColor="#E8E8E8"
         app:lss_isDisabled="false"
         app:lss_limitValue="850"
@@ -31,7 +32,8 @@
         app:lss_rangeValueTextSize="12sp"
         app:lss_slidingInterval="50"
         app:lss_thumbSliderBackgroundColor="#FFFFFF"
-        app:lss_thumbSliderRadius="12dp"
+        app:lss_thumbSliderDrawable="@drawable/ic_thumb_slider"
+        app:lss_thumbSliderRadius="24dp"
         app:lss_title="Amount"
         app:lss_titleTextColor="#9FA7AD"
         app:lss_titleTextFont="@font/ttnorms_regular"
@@ -39,7 +41,6 @@
         app:lss_trackHeight="4dp"
         app:lss_unit="€"
         app:lss_unitPosition="back"
-        app:lss_vibrateOnLimitReached="true"
-        app:lss_hideBubble="false" />
+        app:lss_vibrateOnLimitReached="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
