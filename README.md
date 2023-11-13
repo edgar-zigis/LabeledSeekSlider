@@ -30,6 +30,7 @@ implementation 'com.bio-matic:labeledseekslider:1.3.0'
     app:lss_bubbleValueTextFont="@font/ttnorms_bold"
     app:lss_bubbleValueTextSize="14sp"
     app:lss_defaultValue="550"
+    app:lss_hideRangeIndicators="false"
     app:lss_inactiveTrackColor="#E8E8E8"
     app:lss_isDisabled="false"
     app:lss_limitValue="850"
