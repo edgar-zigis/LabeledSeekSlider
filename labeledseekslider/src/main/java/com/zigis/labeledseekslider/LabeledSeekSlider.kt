@@ -198,6 +198,14 @@ open class LabeledSeekSlider : View {
             invalidate()
         }
     /**
+     *  Option to show/hide range indicators
+     */
+    var isRangeIndicationHidden = false
+        set(value) {
+            field = value
+            invalidate()
+        }
+    /**
      *  Font for TextView containing @param title
      */
     var titleTextFont = Typeface.create("sans-serif", Typeface.NORMAL)
@@ -418,7 +426,6 @@ open class LabeledSeekSlider : View {
             R.styleable.LabeledSeekSlider_lss_isDisabled,
             isDisabled
         )
-
         activeTrackColor = styledAttributes.getColor(
             R.styleable.LabeledSeekSlider_lss_activeTrackColor,
             activeTrackColor
@@ -453,6 +460,10 @@ open class LabeledSeekSlider : View {
         rangeValueTextColor = styledAttributes.getColor(
             R.styleable.LabeledSeekSlider_lss_rangeValueTextColor,
             rangeValueTextColor
+        )
+        isRangeIndicationHidden = styledAttributes.getBoolean(
+            R.styleable.LabeledSeekSlider_lss_hideRangeIndicators,
+            false
         )
 
         styledAttributes.getResourceId(R.styleable.LabeledSeekSlider_lss_titleTextFont, 0).also {
@@ -520,10 +531,8 @@ open class LabeledSeekSlider : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         (actualXPosition ?: getActiveX(actualFractionalValue)).also { x ->
-            if (!isBubbleHidden) {
-                drawBubbleValue(canvas, x)
-                drawBubbleOutline(canvas, x)
-            }
+            drawBubbleValue(canvas, x)
+            drawBubbleOutline(canvas, x)
             drawTitleLabelText(canvas)
             drawInactiveTrack(canvas)
             drawActiveTrack(canvas, x)
@@ -644,6 +653,9 @@ open class LabeledSeekSlider : View {
     //  Bubble drawing
 
     private fun drawBubbleOutline(canvas: Canvas, x: Float) {
+        if (isBubbleHidden) {
+            return
+        }
         bubblePath = Path().apply {
             fillType = Path.FillType.EVEN_ODD
             moveTo(getBubbleHorizontalOffset(x), topPadding)
@@ -698,7 +710,9 @@ open class LabeledSeekSlider : View {
         val displayValue = getDisplayValue()
 
         if (displayValue in valuesToSkip) {
-            drawBubbleValueOnCanvas()
+            if (!isBubbleHidden) {
+                drawBubbleValueOnCanvas()
+            }
             return
         }
 
@@ -720,8 +734,10 @@ open class LabeledSeekSlider : View {
             onValueChanged?.invoke(currentValue)
         }
 
-        bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
-        drawBubbleValueOnCanvas()
+        if (!isBubbleHidden) {
+            bubbleTextPaint.getTextBounds(bubbleText, 0, bubbleText.length, bubbleTextRect)
+            drawBubbleValueOnCanvas()
+        }
     }
 
     private fun drawTitleLabelText(canvas: Canvas) {
@@ -735,6 +751,9 @@ open class LabeledSeekSlider : View {
     }
 
     private fun drawMinRangeText(canvas: Canvas) {
+        if (isRangeIndicationHidden) {
+            return
+        }
         val textString = getUnitValue(minValue)
         rangeTextPaint.getTextBounds(textString, 0, textString.length, minRangeTextRect)
         canvas.apply {
@@ -746,6 +765,9 @@ open class LabeledSeekSlider : View {
     }
 
     private fun drawMaxRangeText(canvas: Canvas) {
+        if (isRangeIndicationHidden) {
+            return
+        }
         val textString = getUnitValue(maxValue)
         rangeTextPaint.getTextBounds(textString, 0, textString.length, maxRangeTextRect)
         canvas.apply {
