@@ -304,7 +304,6 @@ open class LabeledSeekSlider : View {
     private var actualXPosition: Float? = null
 
     private val topPadding = dp(2f)
-    private val sidePadding = dp(16f)
     private val bubbleHeight = dp(26f)
     private val minimumBubbleWidth = dp(84f)
     private val bubbleTextPadding = dp(16f)
@@ -506,7 +505,11 @@ open class LabeledSeekSlider : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val minimumDesiredWidth = suggestedMinimumWidth + paddingLeft + paddingRight
-        val minimumDesiredHeight = dp(120f).toInt()
+        val minimumDesiredHeight = when {
+            isBubbleHidden && isRangeIndicationHidden -> thumbSliderRadius.toInt()
+            isRangeIndicationHidden -> dp(90f).toInt()
+            else -> dp(120f).toInt()
+        }
         setMeasuredDimension(
             measureDimension(minimumDesiredWidth, widthMeasureSpec),
             measureDimension(minimumDesiredHeight, heightMeasureSpec)
@@ -572,8 +575,8 @@ open class LabeledSeekSlider : View {
     }
 
     private fun handleSlidingMovement(x: Float): Boolean {
-        val relativeX = min(measuredWidth - sidePadding - thumbSliderRadius, max(sidePadding / 2 - thumbSliderRadius, x))
-        val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
+        val relativeX = min(measuredWidth - thumbSliderRadius, max(-thumbSliderRadius, x))
+        val slidingAreaWidth = measuredWidth - thumbSliderRadius
 
         val newValue = min(maxValue, max(
             minValue,
@@ -598,15 +601,15 @@ open class LabeledSeekSlider : View {
     }
 
     private fun getActiveX(currentValue: Int): Float {
-        val slidingAreaWidth = measuredWidth - sidePadding - thumbSliderRadius
+        val slidingAreaWidth = measuredWidth - thumbSliderRadius
         val progress = (currentValue - minValue).toFloat() / (maxValue - minValue).toFloat()
         return slidingAreaWidth * progress
     }
 
     private fun drawThumbSlider(canvas: Canvas, x: Float) {
         val centerX = min(
-            measuredWidth - thumbSliderRadius / 2 - sidePadding,
-            max(sidePadding + thumbSliderRadius / 2, x + sidePadding / 2)
+            measuredWidth - thumbSliderRadius / 2,
+            max(thumbSliderRadius / 2, x)
         )
         if (thumbSliderDrawable != null) {
             thumbSliderDrawable?.setBounds(
@@ -630,9 +633,9 @@ open class LabeledSeekSlider : View {
 
     private fun drawActiveTrack(canvas: Canvas, x: Float) {
         val activeTrackRect = RectF(
-            sidePadding,
+            0f,
             getSlidingTrackVerticalOffset(),
-            min(measuredWidth.toFloat() - sidePadding, max(sidePadding + thumbSliderRadius / 2, x + sidePadding / 2)),
+            min(measuredWidth.toFloat(), max(thumbSliderRadius / 2, x)),
             getSlidingTrackVerticalOffset() + trackHeight
         )
         val cornerRadius = trackHeight / 2
@@ -641,9 +644,9 @@ open class LabeledSeekSlider : View {
 
     private fun drawInactiveTrack(canvas: Canvas) {
         inactiveTrackRect = RectF(
-            sidePadding,
+            0f,
             getSlidingTrackVerticalOffset(),
-            measuredWidth.toFloat() - sidePadding,
+            measuredWidth.toFloat(),
             getSlidingTrackVerticalOffset() + trackHeight
         )
         val cornerRadius = trackHeight / 2
@@ -660,21 +663,20 @@ open class LabeledSeekSlider : View {
             fillType = Path.FillType.EVEN_ODD
             moveTo(getBubbleHorizontalOffset(x), topPadding)
 
-            val comparatorVar1 = x - (bubblePathWidth / 2 - sidePadding / 2)
-            val comparatorVar2 = sidePadding / 2
-            val comparatorVar3 = measuredWidth - sidePadding / 2 - bubblePathWidth
+            val comparatorVar1 = x - (bubblePathWidth / 2)
+            val comparatorVar2 = measuredWidth - bubblePathWidth
 
             val tailStart = when {
-                comparatorVar2 > comparatorVar1 -> {
+                0f > comparatorVar1 -> {
                     bubblePathWidth / 2 + min(
-                        sidePadding / 2 + thumbSliderRadius / 2 + dp(2f),
-                        comparatorVar2 - comparatorVar1
+                        thumbSliderRadius / 2 + dp(2f),
+                        -comparatorVar1
                     )
                 }
-                comparatorVar1 > comparatorVar3 -> {
+                comparatorVar1 > comparatorVar2 -> {
                     bubblePathWidth / 2 - min(
-                        sidePadding / 2 + thumbSliderRadius / 2 + dp(2f),
-                        comparatorVar1 - comparatorVar3
+                        thumbSliderRadius / 2 + dp(2f),
+                        comparatorVar1 - comparatorVar2
                     )
                 }
                 else -> bubblePathWidth / 2
@@ -744,7 +746,7 @@ open class LabeledSeekSlider : View {
         titleTextPaint.getTextBounds(title, 0, title.length, titleTextRect)
         canvas.apply {
             save()
-            translate(sidePadding, getTitleLabelTextVerticalOffset())
+            translate(0f, getTitleLabelTextVerticalOffset())
             formTextLayout(title, titleTextPaint).draw(this)
             restore()
         }
@@ -758,7 +760,7 @@ open class LabeledSeekSlider : View {
         rangeTextPaint.getTextBounds(textString, 0, textString.length, minRangeTextRect)
         canvas.apply {
             save()
-            translate(sidePadding, getRangeTextVerticalOffset())
+            translate(0f, getRangeTextVerticalOffset())
             formTextLayout(textString, rangeTextPaint).draw(this)
             restore()
         }
@@ -785,13 +787,16 @@ open class LabeledSeekSlider : View {
     //  Margin methods
 
     private fun getSlidingTrackVerticalOffset(): Float {
-        return bubbleHeight + dp(8f) + titleTextRect.height() + dp(8f) + thumbSliderRadius
+        return when {
+            isBubbleHidden && isRangeIndicationHidden -> thumbSliderRadius / 2 - dp(2f)
+            else -> bubbleHeight + dp(8f) + titleTextRect.height() + dp(8f) + thumbSliderRadius
+        }
     }
 
     private fun getBubbleHorizontalOffset(x: Float): Float {
         return min(
-            measuredWidth - sidePadding / 2 - bubblePathWidth,
-            max(sidePadding / 2, x - (bubblePathWidth / 2 - sidePadding / 2))
+            measuredWidth - bubblePathWidth,
+            max(0f, x - (bubblePathWidth / 2))
         )
     }
 
@@ -802,10 +807,10 @@ open class LabeledSeekSlider : View {
     private fun getBubbleTextHorizontalOffset(x: Float): Float {
         bubblePathWidth = max(minimumBubbleWidth, bubbleTextRect.width() + bubbleTextPadding * 2)
         return min(
-            measuredWidth - sidePadding / 2 - bubbleTextRect.width() - ((bubblePathWidth - bubbleTextRect.width()) / 2),
+            measuredWidth - bubbleTextRect.width() - ((bubblePathWidth - bubbleTextRect.width()) / 2),
             max(
-                bubblePathWidth / 2 - bubbleTextRect.width() / 2 + sidePadding / 2,
-                x - bubbleTextRect.width() / 2 + sidePadding / 2
+                bubblePathWidth / 2 - bubbleTextRect.width() / 2,
+                x - bubbleTextRect.width() / 2
             )
         )
     }
@@ -819,7 +824,7 @@ open class LabeledSeekSlider : View {
     }
 
     private fun getMaxRangeTextHorizontalOffset(): Float {
-        return measuredWidth - maxRangeTextRect.width() - sidePadding
+        return measuredWidth - maxRangeTextRect.width().toFloat()
     }
 
     //  Disabled state
