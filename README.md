@@ -16,7 +16,7 @@ allprojects {
 }
 ```
 ```gradle
-implementation 'com.bio-matic:labeledseekslider:1.3.0'
+implementation 'com.bio-matic:labeledseekslider:1.3.3'
 ```
 ### Usage
 ``` xml
