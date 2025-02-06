@@ -6,12 +6,12 @@ plugins {
 android {
 
     namespace 'com.example.labeledseekslider'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.zigis.labeledseekslider.sample"
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
 
@@ -41,8 +41,8 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
     implementation project(':labeledseekslider')
 }
