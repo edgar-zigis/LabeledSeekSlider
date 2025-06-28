@@ -6,12 +6,12 @@ plugins {
 android {
 
     namespace 'com.example.labeledseekslider'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.zigis.labeledseekslider.sample"
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
 
@@ -27,15 +27,12 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig = true
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 }
 
